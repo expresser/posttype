@@ -415,6 +415,13 @@ class Query {
     return $this;
   }
 
+  public function suppressFilters() {
+
+    $this->suppress_filters = true;
+
+    return $this;
+  }
+
   public function raw($key, $value) {
 
     $this->$key = $value;
