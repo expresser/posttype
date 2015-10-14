@@ -1,66 +1,70 @@
 <?php namespace Expresser\Post;
 
 use Closure;
-use Exception;
 use InvalidArgumentException;
 use WP_Query;
 
 class Query {
 
-  public $metas = array();
-
   protected $query;
 
-  private $arrays = array('meta_query', 'orderby', 'tax_query');
+  protected $metas = array();
+
+  protected $sorts = array();
+
+  protected $taxonomies = array();
 
   public function __construct(WP_Query $query) {
 
     $this->query = $query;
   }
 
-  public function __call($method, $parameters) {
+  public function __get($name) {
 
-    $callback = array($this->query, $method);
-
-    if (method_exists($this->query, $method) && is_callable($callback)) {
-
-      $result = call_user_func_array($callback, $parameters);
-
-      if (strtolower($method) === 'get') {
-
-        $parameter = array_shift($parameters);
-
-        if (in_array($parameter, $this->arrays)) {
-
-          if (empty($result)) {
-
-            $result = array();
-          }
-        }
-      }
-
-      return $result;
-    }
-
-    $className = get_class($this);
-
-    throw new Exception("Call to undefined method {$className}::{$method}()");
+    return $this->getParameter($name);
   }
 
-  public function fetch() {
+  public function __isset($name) {
 
-    return $this->get_posts();
+    return is_null($this->getParameter($name)) === false;
+  }
+
+  public function __set($name, $value) {
+
+    $this->setParameter($name, $value);
+  }
+
+  public function get() {
+
+    return $this->query->get_posts();
+  }
+
+  public function getParameter($name) {
+
+    return $this->getParameterValue($name);
+  }
+
+  public function getParameterValue($name) {
+
+    $value = $this->query->get($name);
+
+    if (!empty($value)) return $value;
+  }
+
+  public function setParameter($name, $value) {
+
+    $this->query->set($name, $value);
   }
 
   public function author($id) {
 
     if (is_int($id)) {
 
-      $this->set('author', $id);
+      $this->author = $id;
     }
     else if (is_string($id)) {
 
-      $this->set('author_name', $id);
+      $this->author_name = $id;
     }
     else {
 
@@ -76,11 +80,11 @@ class Query {
 
       case 'IN':
 
-        $this->set('author__in', $ids); break;
+        $this->author__in = $ids; break;
 
       case 'NOT IN':
 
-        $this->set('author__not_in', $ids); break;
+        $this->author__not_in = $ids; break;
 
       default:
 
@@ -94,11 +98,11 @@ class Query {
 
     if (is_int($id)) {
 
-      $this->set('cat', $id);
+      $this->cat = $id;
     }
     else if (is_string($id)) {
 
-      $this->set('category_name', $id);
+      $this->category_name = $id;
     }
     else {
 
@@ -114,15 +118,15 @@ class Query {
 
       case 'IN':
 
-        $this->set('category__in', $ids); break;
+        $this->category__in = $ids; break;
 
       case 'NOT IN':
 
-        $this->set('category__not_in', $ids); break;
+        $this->category__not_in = $ids; break;
 
       case 'AND':
 
-        $this->set('category__and', $ids); break;
+        $this->category__and = $ids; break;
 
       default:
 
@@ -136,11 +140,11 @@ class Query {
 
     if (is_int($id)) {
 
-      $this->set('tag_id', $id);
+      $this->tag_id = $id;
     }
     else if (is_string($id)) {
 
-      $this->set('tag', $id);
+      $this->tag = $id;
     }
     else {
 
@@ -156,23 +160,23 @@ class Query {
 
       case 'IN':
 
-        $this->set('tag__in', $ids); break;
+        $this->tag__in = $ids; break;
 
       case 'NOT IN':
 
-        $this->set('tag__not_in', $ids); break;
+        $this->tag__not_in = $ids; break;
 
       case 'AND':
 
-        $this->set('tag__and', $ids); break;
+        $this->tag__and = $ids; break;
 
       case 'SLUG IN':
 
-        $this->set('tag_slug__in', $ids); break;
+        $this->tag_slug__in = $ids; break;
 
       case 'SLUG AND':
 
-        $this->set('tag_slug__and', $ids); break;
+        $this->tag_slug__and = $ids; break;
 
       default:
 
@@ -184,11 +188,9 @@ class Query {
 
   public function taxonomy($taxonomy, $terms, $field = 'term_id', $include_children = true, $operator = 'IN') {
 
-    $taxonomies = $this->get('tax_query');
+    $this->taxonomies[] = compact('taxonomy', 'field', 'terms', 'include_children', 'operator');
 
-    $taxonomies[] = compact('taxonomy', 'field', 'terms', 'include_children', 'operator');
-
-    $this->set('tax_query', $taxonomies);
+    $this->tax_query = $this->taxonomies;
 
     return $this;
   }
@@ -197,14 +199,12 @@ class Query {
 
     call_user_func($callback, $this);
 
-    $taxonomies = $this->get('tax_query');
+    if (count($this->taxonomies) > 1) {
 
-    if (count($taxonomies) > 1) {
-
-      $taxonomies = array_merge(array('relation' => $relation), $taxonomies);
+      $this->taxonomies = array_merge(array('relation' => $relation), $this->taxonomies);
     }
 
-    $this->set('tax_query', $taxonomies);
+    $this->tax_query = $this->taxonomies;
 
     return $this;
   }
@@ -213,25 +213,18 @@ class Query {
 
     $query = self::make();
 
-    call_user_func($callback, $query);
+    $query->taxonomies($callback, $relation);
 
-    $taxonomies = $query->get('tax_query');
+    $this->taxonomies = array_merge($this->taxonomies, array($query->tax_query));
 
-    if (count($taxonomies) > 1) {
-
-      $taxonomies = array_merge(array('relation' => $relation), $taxonomies);
-    }
-
-    $taxonomies = array_merge($this->get('tax_query'), array($taxonomies));
-
-    $this->set('tax_query', $taxonomies);
+    $this->tax_query = $this->taxonomies;
 
     return $this;
   }
 
   public function search($keyword) {
 
-    $this->set('s', $keyword);
+    $this->s = $keyword;
 
     return $this;
   }
@@ -240,11 +233,11 @@ class Query {
 
     if (is_int($id)) {
 
-      $this->set('p', $id);
+      $this->p = $id;
     }
     else if (is_string($id)) {
 
-      $this->set('name', $id);
+      $this->name = $id;
     }
     else {
 
@@ -262,11 +255,11 @@ class Query {
 
       case 'IN':
 
-        $this->set('post__in', $ids); break;
+        $this->post__in = $ids; break;
 
       case 'NOT IN':
 
-        $this->set('post__not_in', $ids); break;
+        $this->post__not_in = $ids; break;
 
       default:
 
@@ -280,11 +273,11 @@ class Query {
 
     if (is_int($id)) {
 
-      $this->set('page_id', $id);
+      $this->page_id = $id;
     }
     else if (is_string($id)) {
 
-      $this->set('pagename', $id);
+      $this->pagename = $id;
     }
     else {
 
@@ -296,7 +289,7 @@ class Query {
 
   public function parent($id) {
 
-    $this->set('post_parent', $id);
+    $this->post_parent = $id;
 
     return $this;
   }
@@ -307,11 +300,11 @@ class Query {
 
       case 'IN':
 
-        $this->set('post_parent__in', $ids); break;
+        $this->post_parent__in = $ids; break;
 
       case 'NOT IN':
 
-        $this->set('post_parent__not_in', $ids); break;
+        $this->post_parent__not_in = $ids; break;
 
       default:
 
@@ -325,11 +318,11 @@ class Query {
 
     if (is_null($password) || is_bool($password)) {
 
-      $this->set('has_password', $password);
+      $this->has_password = $password;
     }
     else if (is_string($password)) {
 
-      $this->set('post_password', $password);
+      $this->post_password = $password;
     }
     else {
 
@@ -341,14 +334,14 @@ class Query {
 
   public function type($type) {
 
-    $this->set('post_type', $type);
+    $this->post_type = $type;
 
     return $this;
   }
 
   public function status($status) {
 
-    $this->set('post_status', $status);
+    $this->post_status = $status;
 
     return $this;
   }
@@ -357,23 +350,30 @@ class Query {
 
     if (is_int($postsPerPage) && $postsPerPage >= 0) {
 
-      $this->set('nopaging', false);
+      $this->nopaging = false;
 
-      $this->set($isArchivePage ? 'posts_per_archive_page' : 'posts_per_page', $postsPerPage);
+      if ($isArchivePage) {
 
-      if ($offset > 0) {
-
-        $this->set('offset', $offset + ($paged - 1) * $postsPerPage);
+        $this->posts_per_archive_page = $postsPerPage;
       }
       else {
 
-        $this->set('offset', $offset);
-        $this->set('paged', $paged);
+        $this->posts_per_page = $postsPerPage;
+      }
+
+      if ($offset > 0) {
+
+        $this->offset = ($offset + ($paged - 1) * $postsPerPage);
+      }
+      else {
+
+        $this->offset = $offset;
+        $this->paged = $paged;
       }
     }
     else if ($postsPerPage === -1 || $postsPerPage === false) {
 
-      $this->set('nopaging', true);
+      $this->nopaging = true;
     }
     else {
 
@@ -387,7 +387,7 @@ class Query {
 
     if (is_int($number)) {
 
-      $this->set('page') = $number;
+      $this->page = $number;
     }
     else {
 
@@ -399,25 +399,25 @@ class Query {
 
   public function ignoreStickyPosts() {
 
-    $this->set('ignore_sticky_posts', true);
+    $this->ignore_sticky_posts = true;
 
     return $this;
   }
 
   public function sort($orderby = 'date', $order = 'DESC') {
 
-    $sort = $this->get('orderby');
+    $sort = $this->orderby;
 
     $sort[$orderby] = $order;
 
-    $this->set('orderby', $sort);
+    $this->orderby = $sort;
 
     return $this;
   }
 
   public function raw($key, $value) {
 
-    $this->set($key, $value);
+    $this->$key = $value;
 
     return $this;
   }
