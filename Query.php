@@ -1,59 +1,55 @@
-<?php namespace Expresser\Post;
+<?php namespace Expresser\PostType;
 
 use Closure;
 use InvalidArgumentException;
+
 use WP_Query;
 
 class Query {
 
-  protected $query;
+  protected $metas = [];
 
-  protected $metas = array();
+  protected $sorts = [];
 
-  protected $sorts = array();
+  protected $taxonomies = [];
 
-  protected $taxonomies = array();
+  private $statuses = ['publish', 'pending', 'draft', 'auto-draft', 'future', 'private', 'inherit', 'trash'];
 
   public function __construct(WP_Query $query) {
 
-    $this->query = $query;
+    parent::__construct($query);
   }
 
-  public function __get($name) {
+  public function find($id) {
 
-    return $this->getParameter($name);
+    return $this->post($id)->status($this->statuses)->first();
   }
 
-  public function __isset($name) {
+  public function findAll(array $ids) {
 
-    return is_null($this->getParameter($name)) === false;
+    return $this->posts($ids)->status($this->statuses)->get();
   }
 
-  public function __set($name, $value) {
+  public function findByName($name) {
 
-    $this->setParameter($name, $value);
+    return $this->post($name)->status($this->statuses)->first();
+  }
+
+  public function findBySlug($name) {
+
+    return $this->page($name)->status($this->statuses)->first();
+  }
+
+  public function first() {
+
+    return $this->paginate(1)->get()->first();
   }
 
   public function get() {
 
-    return $this->query->get_posts();
-  }
+    $posts = $this->query->get_posts();
 
-  public function getParameter($name) {
-
-    return $this->getParameterValue($name);
-  }
-
-  public function getParameterValue($name) {
-
-    $value = $this->query->get($name);
-
-    if (!empty($value)) return $value;
-  }
-
-  public function setParameter($name, $value) {
-
-    $this->query->set($name, $value);
+    return $this->getModels($posts);
   }
 
   public function author($id) {
@@ -201,7 +197,7 @@ class Query {
 
     if (count($this->taxonomies) > 1) {
 
-      $this->taxonomies = array_merge(array('relation' => $relation), $this->taxonomies);
+      $this->taxonomies = array_merge(['relation' => $relation], $this->taxonomies);
     }
 
     $this->tax_query = $this->taxonomies;
@@ -211,11 +207,11 @@ class Query {
 
   public function taxonomiesSub(Closure $callback, $relation = 'AND') {
 
-    $query = self::make();
+    $query = (new static(new WP_Query))->setModel($this->model);
 
     $query->taxonomies($callback, $relation);
 
-    $this->taxonomies = array_merge($this->taxonomies, array($query->tax_query));
+    $this->taxonomies = array_merge($this->taxonomies, [$query->tax_query]);
 
     $this->tax_query = $this->taxonomies;
 
@@ -249,17 +245,21 @@ class Query {
 
   public function posts(array $ids, $operator = 'IN') {
 
-    $ids = count($ids) > 0 ? $ids : array(mt_getrandmax());
-
     switch ($operator) {
 
       case 'IN':
+
+        $ids = count($ids) > 0 ? $ids : [PHP_INT_MAX];
 
         $this->post__in = $ids; break;
 
       case 'NOT IN':
 
         $this->post__not_in = $ids; break;
+
+      case 'NAME IN':
+
+        $this->post_name__in = $ids; break;
 
       default:
 
@@ -314,20 +314,16 @@ class Query {
     return $this;
   }
 
-  public function password($password = null) {
+  public function hasPassword($hasPassword = null) {
 
-    if (is_null($password) || is_bool($password)) {
+    $this->has_password = $hasPassword;
 
-      $this->has_password = $password;
-    }
-    else if (is_string($password)) {
+    return $this;
+  }
 
-      $this->post_password = $password;
-    }
-    else {
+  public function password($password) {
 
-      throw new InvalidArgumentException;
-    }
+    $this->post_password = $password;
 
     return $this;
   }
@@ -346,13 +342,13 @@ class Query {
     return $this;
   }
 
-  public function paginate($postsPerPage, $offset = 0, $paged = 1, $isArchivePage = false) {
+  public function paginate($postsPerPage, $page = 1, $offset = 0, $type = null) {
 
     if (is_int($postsPerPage) && $postsPerPage >= 0) {
 
       $this->nopaging = false;
 
-      if ($isArchivePage) {
+      if ($type === 'ARCHIVE') {
 
         $this->posts_per_archive_page = $postsPerPage;
       }
@@ -363,31 +359,25 @@ class Query {
 
       if ($offset > 0) {
 
-        $this->offset = ($offset + ($paged - 1) * $postsPerPage);
+        $this->offset = ($offset + ($page - 1) * $postsPerPage);
       }
       else {
 
         $this->offset = $offset;
-        $this->paged = $paged;
+
+        if ($type === 'STATIC FRONT PAGE') {
+
+          $this->page = $page;
+        }
+        else {
+
+          $this->paged = $page;
+        }
       }
     }
     else if ($postsPerPage === -1 || $postsPerPage === false) {
 
       $this->nopaging = true;
-    }
-    else {
-
-      throw new InvalidArgumentException;
-    }
-
-    return $this;
-  }
-
-  public function pageNumber($number) {
-
-    if (is_int($number)) {
-
-      $this->page = $number;
     }
     else {
 
@@ -404,13 +394,112 @@ class Query {
     return $this;
   }
 
-  public function sort($orderby = 'date', $order = 'DESC') {
+  public function orderBy($orderBy = 'date', $order = 'DESC') {
 
-    $sort = $this->orderby;
+    $this->sorts[] = compact('orderBy', 'order');
 
-    $sort[$orderby] = $order;
+    $this->orderby = $this->sorts;
 
-    $this->orderby = $sort;
+    return $this;
+  }
+
+  // TODO: Date Query
+
+  public function metaCompare($compare) {
+
+    $this->meta_compare = $compare;
+
+    return $this;
+  }
+
+  public function metaKey($key) {
+
+    $this->meta_key = $key;
+
+    return $this;
+  }
+
+  public function metaType($type) {
+
+    $this->meta_type = $type;
+
+    return $this;
+  }
+
+  public function metaValue($value) {
+
+    $this->meta_value = $value;
+
+    return $this;
+  }
+
+  public function meta($key, $value, $compare = '=', $type = 'CHAR') {
+
+    $this->metas[] = compact('key', 'value', 'compare', 'type');
+
+    $this->meta_query = $this->metas;
+
+    return $this;
+  }
+
+  public function metas(Closure $callback, $relation = 'AND') {
+
+    call_user_func($callback, $this);
+
+    if (count($this->metas) > 1) {
+
+      $this->metas = array_merge(['relation' => $relation], $this->metas);
+    }
+
+    $this->meta_query = $this->metas;
+
+    return $this;
+  }
+
+  public function metasSub(Closure $callback, $relation = 'AND') {
+
+    $query = (new static(new WP_Query))->setModel($this->model);
+
+    $query->metas($callback, $relation);
+
+    $this->metas = array_merge($this->metas, [$query->meta_query]);
+
+    $this->meta_query = $this->metas;
+
+    return $this;
+  }
+
+  public function permission($perm) {
+
+    $this->perm = $perm;
+
+    return $this;
+  }
+
+  public function mimeType($mimeType) {
+
+    $this->post_mime_type = $mimeType;
+
+    return $this;
+  }
+
+  public function cacheResults($enable = true) {
+
+    $this->cache_results = $enable;
+
+    return $this;
+  }
+
+  public function updatePostMetaCache($enable = true) {
+
+    $this->update_post_meta_cache = $enable;
+
+    return $this;
+  }
+
+  public function updatePostTermCache($enable = true) {
+
+    $this->update_post_term_cache = $enable;
 
     return $this;
   }
@@ -420,17 +509,5 @@ class Query {
     $this->suppress_filters = true;
 
     return $this;
-  }
-
-  public function raw($key, $value) {
-
-    $this->$key = $value;
-
-    return $this;
-  }
-
-  public static function make() {
-
-    return new static(new WP_Query);
   }
 }

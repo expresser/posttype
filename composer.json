@@ -1,5 +1,5 @@
 {
-  "name": "expresser/post",
+  "name": "expresser/posttype",
   "support": {
     "issues": "https://github.com/expresser/post/issues",
     "source": "https://github.com/expresser/post"
@@ -12,11 +12,12 @@
   ],
   "require": {
     "php": ">=5.4.0",
-    "illuminate/support": "4.2.*"
+    "expresser/support": "dev-master",
+    "expresser/taxonomy": "dev-master"
   },
   "autoload": {
     "psr-4": {
-      "Expresser\\Post\\": ""
+      "Expresser\\PostType\\": ""
     }
   }
 }
