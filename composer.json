@@ -1,8 +1,8 @@
 {
   "name": "expresser/posttype",
   "support": {
-    "issues": "https://github.com/expresser/post/issues",
-    "source": "https://github.com/expresser/post"
+    "issues": "https://github.com/expresser/posttype/issues",
+    "source": "https://github.com/expresser/posttype"
   },
   "authors": [
     {
@@ -13,11 +13,11 @@
   "repositories":[
 		{
       "type": "vcs",
-      "url": "https://github.com/expresser/support.git"
+      "url": "https://github.com/expresser/support"
     },
     {
       "type": "vcs",
-      "url": "https://github.com/expresser/taxonomy.git"
+      "url": "https://github.com/expresser/taxonomy"
     }
 	],
   "require": {
@@ -29,5 +29,6 @@
     "psr-4": {
       "Expresser\\PostType\\": ""
     }
-  }
+  },
+  "minimum-stability": "dev"
 }

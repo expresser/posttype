@@ -1,4 +1,4 @@
-<?php namespace Expresser\Type;
+<?php namespace Expresser\PostType;
 
 use InvalidArgumentException;
 
