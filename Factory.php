@@ -44,7 +44,7 @@ class Factory {
 
   protected static function convertToWords($value) {
 
-    return ucwords(str_replace(array('-', '_'), ' ', $value));
+    return ucwords(str_replace(['-', '_'], ' ', $value));
   }
 
   protected static function convertToAlias($value) {

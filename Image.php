@@ -13,7 +13,7 @@ class Image extends Attachment {
 
   public function getClassNames($classNames) {
 
-    $classNames =  implode(' ', array($this->classNames, $classNames));
+    $classNames =  implode(' ', [$this->classNames, $classNames]);
 
     return $classNames;
   }
@@ -63,7 +63,7 @@ class Image extends Attachment {
       foreach ($meta['sizes'] as $name => &$size) {
 
         $size = array_merge($size, array_combine(
-          array('url', 'width', 'height', 'resized'),
+          ['url', 'width', 'height', 'resized'],
           wp_get_attachment_image_src($this->ID, $name)
         ));
       }
@@ -86,11 +86,11 @@ class Image extends Attachment {
 
     $this->classNames = $classNames;
 
-    add_filter('get_image_tag_class', array($this, 'getClassNames'), 10);
+    add_filter('get_image_tag_class', [$this, 'getClassNames'], 10);
 
     $img = self::removeHeightAndWidthAttributes(get_image_tag($this->ID, $alt, $title, null, null));
 
-    remove_filter('get_image_tag_class', array($this, 'getClassNames'), 10);
+    remove_filter('get_image_tag_class', [$this, 'getClassNames'], 10);
 
     return $img;
   }

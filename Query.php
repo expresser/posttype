@@ -5,7 +5,7 @@ use InvalidArgumentException;
 
 use WP_Query;
 
-class Query {
+class Query extends \Expresser\Support\Query {
 
   protected $metas = [];
 
@@ -182,9 +182,9 @@ class Query {
     return $this;
   }
 
-  public function taxonomy($taxonomy, $terms, $field = 'term_id', $include_children = true, $operator = 'IN') {
+  public function taxonomy($taxonomy, $terms, $field = 'term_id', $includeChildren = true, $operator = 'IN') {
 
-    $this->taxonomies[] = compact('taxonomy', 'field', 'terms', 'include_children', 'operator');
+    $this->taxonomies[] = compact('taxonomy', 'field', 'terms', 'includeChildren', 'operator');
 
     $this->tax_query = $this->taxonomies;
 
