@@ -9,8 +9,6 @@ class Query extends \Expresser\Support\Query {
 
   protected $metas = [];
 
-  protected $sorts = [];
-
   protected $taxonomies = [];
 
   private $statuses = ['publish', 'pending', 'draft', 'auto-draft', 'future', 'private', 'inherit', 'trash'];
@@ -394,16 +392,19 @@ class Query extends \Expresser\Support\Query {
     return $this;
   }
 
+  // TODO: Multi-dimensional orderBy
   public function orderBy($orderBy = 'date', $order = 'DESC') {
 
-    $this->sorts[] = compact('orderBy', 'order');
-
-    $this->orderby = $this->sorts;
+    $this->orderby = $orderBy;
+    $this->order = $order;
 
     return $this;
   }
 
   // TODO: Date Query
+  public function date() {
+
+  }
 
   public function metaCompare($compare) {
 
