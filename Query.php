@@ -40,7 +40,14 @@ class Query extends \Expresser\Support\Query {
 
   public function first() {
 
-    return $this->paginate(1)->get()->first();
+    return $this->limit(1)->get()->first();
+  }
+
+  public function limit($limit) {
+
+    $this->paginate($limit);
+
+    return $this;
   }
 
   public function get() {
@@ -340,30 +347,30 @@ class Query extends \Expresser\Support\Query {
     return $this;
   }
 
-  public function paginate($postsPerPage, $page = 1, $offset = 0, $type = null) {
+  public function paginate($count, $page = 1, $offset = 0, $type = null) {
 
-    if (is_int($postsPerPage) && $postsPerPage >= 0) {
+    if (is_int($count) && $count >= 0) {
 
       $this->nopaging = false;
 
-      if ($type === 'ARCHIVE') {
+      if (str_is($type, 'ARCHIVE')) {
 
-        $this->posts_per_archive_page = $postsPerPage;
+        $this->posts_per_archive_page = $count;
       }
       else {
 
-        $this->posts_per_page = $postsPerPage;
+        $this->posts_per_page = $count;
       }
 
       if ($offset > 0) {
 
-        $this->offset = ($offset + ($page - 1) * $postsPerPage);
+        $this->offset = ($offset + ($page - 1) * $count);
       }
       else {
 
         $this->offset = $offset;
 
-        if ($type === 'STATIC FRONT PAGE') {
+        if (str_is($type, 'STATIC FRONT PAGE')) {
 
           $this->page = $page;
         }
@@ -373,7 +380,7 @@ class Query extends \Expresser\Support\Query {
         }
       }
     }
-    else if ($postsPerPage === -1 || $postsPerPage === false) {
+    else if ($count === -1 || $count === false) {
 
       $this->nopaging = true;
     }
