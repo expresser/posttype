@@ -7,6 +7,8 @@ use WP_Query;
 
 abstract class Base extends \Expresser\Support\Model {
 
+  protected $fieldPrefix = 'post_';
+
   protected $post;
 
   public function __construct(WP_Post $post = null) {
@@ -37,15 +39,6 @@ abstract class Base extends \Expresser\Support\Model {
   public function getAuthorAttribute($value) {
 
     if (is_numeric($value)) $value = (int)$value;
-
-    return $value;
-  }
-
-  public function getAttributeFromArray($key) {
-
-    $value = parent::getAttributeFromArray($key);
-
-    if (is_null($value)) $value = parent::getAttributeFromArray('post_' . $key);
 
     return $value;
   }
