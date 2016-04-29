@@ -12,8 +12,8 @@
   ],
   "require": {
     "php": ">=5.4.0",
-    "expresser/support": "dev-master",
-    "expresser/taxonomy": "dev-master"
+    "expresser/support": "0.1.0",
+    "expresser/taxonomy": "0.1.0"
   },
   "autoload": {
     "psr-4": {
