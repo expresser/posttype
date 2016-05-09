@@ -187,7 +187,7 @@ class Query extends \Expresser\Support\Query {
     return $this;
   }
 
-  public function taxonomy($taxonomy, $terms, $field = 'term_id', $includeChildren = true, $operator = 'IN') {
+  public function taxonomy($taxonomy, $terms, $field = 'term_id', $operator = 'IN', $includeChildren = true) {
 
     $this->taxonomies[] = compact('taxonomy', 'field', 'terms', 'includeChildren', 'operator');
 

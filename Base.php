@@ -133,16 +133,45 @@ abstract class Base extends \Expresser\Support\Model {
     return $this->getAdjacentPost($inSameTerm, $excludedTerms, true, $taxonomy);
   }
 
-  public static function register() {
+  public static function registerHooks($class) {
 
-    static::registerPostType();
+    remove_action('delete_post', [__CLASS__, '_deletePost']);
+    remove_action('save_post', [__CLASS__, '_savePost'], 10, 2);
+    remove_action('trash_post', [__CLASS__, '_trashPost']);
 
-    parent::register();
+    remove_filter('get_post_metadata', [__CLASS__, '_getMetaData'], 10, 4);
+
+    add_action('delete_post', [__CLASS__, '_deletePost']);
+    add_action('init', [$class, 'registerPostType']);
+    add_action('save_post', [__CLASS__, '_savePost'], 10, 2);
+    add_action('trash_post', [__CLASS__, '_trashPost']);
+
+    add_filter('get_post_metadata', [__CLASS__, '_getMetaData'], 10, 4);
   }
 
-  protected static function registerPostType() {
+  public static function registerPostType() {
 
     throw new Exception('A post type must override registerPostType.');
+  }
+
+  public static function _deletePost($id) {
+
+    do_action(implode('_', ['exp/delete', get_post_type($id)]), $id);
+  }
+
+  public static function _savePost($id, WP_Post $post) {
+
+    do_action(implode('_', ['exp/save', $post->post_type]), $id, $post);
+  }
+
+  public static function _getMetaData($value, $id, $key = '', $single = false) {
+
+    do_action(implode('_', ['exp/get', get_post_type($id), 'metadata']), $value, $id, $key, $single);
+  }
+
+  public static function _trashPost($id) {
+
+    do_action(implode('_', ['exp/trash', get_post_type($id)]), $id);
   }
 
   public abstract function postType();
