@@ -159,14 +159,14 @@ abstract class Base extends \Expresser\Support\Model {
     do_action(implode('_', ['exp/delete', get_post_type($id)]), $id);
   }
 
-  public static function _savePost($id, WP_Post $post) {
-
-    do_action(implode('_', ['exp/save', $post->post_type]), $id, $post);
-  }
-
   public static function _getMetaData($value, $id, $key = '', $single = false) {
 
     do_action(implode('_', ['exp/get', get_post_type($id), 'metadata']), $value, $id, $key, $single);
+  }
+
+  public static function _savePost($id, WP_Post $post) {
+
+    do_action(implode('_', ['exp/save', $post->post_type]), $id, $post);
   }
 
   public static function _trashPost($id) {
