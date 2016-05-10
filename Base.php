@@ -152,7 +152,7 @@ abstract class Base extends \Expresser\Support\Model {
     add_filter('get_post_metadata', [__CLASS__, '_getMetaData'], 10, 4);
     add_filter('get_post_metadata', [__CLASS__, '_getPostThumbnailId'], 10, 4);
 
-    add_action('init', [$class, 'registerPostType']);
+    add_action('init', [$class, 'registerPostType'], -PHP_INT_MAX);
   }
 
   public static function registerPostType() {
