@@ -133,20 +133,26 @@ abstract class Base extends \Expresser\Support\Model {
     return $this->getAdjacentPost($inSameTerm, $excludedTerms, true, $taxonomy);
   }
 
+  public static function getPostThumbnailId($id) {
+
+    return static::_getPostThumbnailId(null, $id, '_thumbnail_id', true, false);
+  }
+
   public static function registerHooks($class) {
 
     remove_action('delete_post', [__CLASS__, '_deletePost']);
     remove_action('save_post', [__CLASS__, '_savePost'], 10, 2);
     remove_action('trash_post', [__CLASS__, '_trashPost']);
-
     remove_filter('get_post_metadata', [__CLASS__, '_getMetaData'], 10, 4);
+    remove_filter('get_post_metadata', [__CLASS__, '_getPostThumbnailId'], 10, 4);
 
     add_action('delete_post', [__CLASS__, '_deletePost']);
-    add_action('init', [$class, 'registerPostType']);
     add_action('save_post', [__CLASS__, '_savePost'], 10, 2);
     add_action('trash_post', [__CLASS__, '_trashPost']);
-
     add_filter('get_post_metadata', [__CLASS__, '_getMetaData'], 10, 4);
+    add_filter('get_post_metadata', [__CLASS__, '_getPostThumbnailId'], 10, 4);
+
+    add_action('init', [$class, 'registerPostType']);
   }
 
   public static function registerPostType() {
@@ -159,14 +165,35 @@ abstract class Base extends \Expresser\Support\Model {
     do_action(implode('_', ['exp/delete', get_post_type($id)]), $id);
   }
 
+  public static function _savePost($id, WP_Post $post) {
+
+    do_action(implode('_', ['exp/save', $post->post_type]), $id, $post);
+  }
+
   public static function _getMetaData($value, $id, $key = '', $single = false) {
 
     do_action(implode('_', ['exp/get', get_post_type($id), 'metadata']), $value, $id, $key, $single);
   }
 
-  public static function _savePost($id, WP_Post $post) {
+  public static function _getPostThumbnailId($value, $id, $key = '_thumbnail_id', $single = true, $filter = true) {
 
-    do_action(implode('_', ['exp/save', $post->post_type]), $id, $post);
+    if (str_is($key, '_thumbnail_id') && $single) {
+
+      remove_filter('get_post_metadata', [__CLASS__, '_getPostThumbnailId'], 10, 4);
+
+      $value = get_post_thumbnail_id($id);
+
+      add_filter('get_post_metadata', [__CLASS__, '_getPostThumbnailId'], 10, 4);
+
+      if ($filter) {
+
+        $value = apply_filters(implode('_', ['exp/get', get_post_type($id), 'thumbnail', 'id']), $value, $id);
+
+        $value = is_numeric($value) ? (int)$value : null;
+      }
+    }
+
+    return $value;
   }
 
   public static function _trashPost($id) {
