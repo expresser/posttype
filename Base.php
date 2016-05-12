@@ -145,12 +145,14 @@ abstract class Base extends \Expresser\Support\Model {
     remove_action('trash_post', [__CLASS__, '_trashPost']);
     remove_filter('get_post_metadata', [__CLASS__, '_getMetaData'], 10, 4);
     remove_filter('get_post_metadata', [__CLASS__, '_getPostThumbnailId'], 10, 4);
+    remove_filter('post_type_link', [__CLASS__, '_getPostTypeLink'], 10, 4);
 
     add_action('delete_post', [__CLASS__, '_deletePost']);
     add_action('save_post', [__CLASS__, '_savePost'], 10, 2);
     add_action('trash_post', [__CLASS__, '_trashPost']);
     add_filter('get_post_metadata', [__CLASS__, '_getMetaData'], 10, 4);
     add_filter('get_post_metadata', [__CLASS__, '_getPostThumbnailId'], 10, 4);
+    add_filter('post_type_link', [__CLASS__, '_getPostTypeLink'], 10, 4);
 
     add_action('init', [$class, 'registerPostType'], -PHP_INT_MAX);
   }
@@ -168,6 +170,11 @@ abstract class Base extends \Expresser\Support\Model {
   public static function _savePost($id, WP_Post $post) {
 
     do_action(implode('_', ['exp/save', $post->post_type]), $id, $post);
+  }
+
+  public static function _trashPost($id) {
+
+    do_action(implode('_', ['exp/trash', get_post_type($id)]), $id);
   }
 
   public static function _getMetaData($value, $id, $key = '', $single = false) {
@@ -196,9 +203,9 @@ abstract class Base extends \Expresser\Support\Model {
     return $value;
   }
 
-  public static function _trashPost($id) {
+  public static function _getPostTypeLink($url, WP_Post $post, $leavename = false, $sample = false) {
 
-    do_action(implode('_', ['exp/trash', get_post_type($id)]), $id);
+    return apply_filters(implode('_', ["exp/$post->post_type", 'link']), $url, $post, $leavename, $sample);
   }
 
   public abstract function postType();
