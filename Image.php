@@ -1,6 +1,8 @@
 <?php namespace Expresser\PostType;
 
-class Image extends Attachment {
+use Expresser\Contracts\Image\Renderable;
+
+class Image extends Attachment implements Renderable {
 
   protected $classNames;
 
@@ -110,7 +112,7 @@ class Image extends Attachment {
     return $this->meta['width'];
   }
 
-  public static function renderImageOrDefault(Image $image = null, $defaultSrc, $classNames = null) {
+  public static function renderImageOrDefault(Renderable $image = null, $defaultSrc, $classNames = null) {
 
     if (is_null($image)) {
 
