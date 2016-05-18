@@ -12,9 +12,9 @@
   ],
   "require": {
     "php": ">=5.4.0",
-    "expresser/contracts": "0.1.6",
-    "expresser/support": "0.1.6",
-    "expresser/taxonomy": "0.1.6"
+    "expresser/contracts": "0.1.7",
+    "expresser/support": "0.1.7",
+    "expresser/taxonomy": "0.1.7"
   },
   "autoload": {
     "psr-4": {
