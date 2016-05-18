@@ -399,6 +399,13 @@ class Query extends \Expresser\Support\Query {
     return $this;
   }
 
+  public function order($order = 'DESC') {
+
+    $this->order = $order;
+
+    return $this;
+  }
+
   // TODO: Multi-dimensional orderBy
   public function orderBy($orderBy = 'date', $order = 'DESC') {
 
