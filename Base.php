@@ -135,26 +135,23 @@ abstract class Base extends \Expresser\Support\Model {
 
   public static function getPostThumbnailId($id) {
 
-    return static::_getPostThumbnailId(null, $id, '_thumbnail_id', true, false);
+    return static::doGetPostThumbnailId(null, $id, '_thumbnail_id', true, false);
   }
 
   public static function registerHooks($class) {
 
-    remove_action('delete_post', [__CLASS__, '_deletePost']);
-    remove_action('save_post', [__CLASS__, '_savePost'], 10, 2);
-    remove_action('trash_post', [__CLASS__, '_trashPost']);
-    remove_filter('get_post_metadata', [__CLASS__, '_getMetaData'], 10, 4);
-    remove_filter('get_post_metadata', [__CLASS__, '_getPostThumbnailId'], 10, 4);
-    remove_filter('post_type_link', [__CLASS__, '_getPostTypeLink'], 10, 4);
+    add_action('delete_post', [__CLASS__, 'doDeletePost'], 10, 1);
+    add_action('delete_post', [__CLASS__, 'refreshRewriteRules'], PHP_INT_MAX, 0);
+    add_action('init', [__CLASS__, 'doRefreshRewriteTags'], 10, 0);
+    add_action('save_post', [__CLASS__, 'doSavePost'], 10, 3);
+    add_action('save_post', [__CLASS__, 'refreshRewriteRules'], PHP_INT_MAX, 0);
+    add_action('trash_post', [__CLASS__, 'doTrashPost'], 10, 1);
+    add_action('trash_post', [__CLASS__, 'refreshRewriteRules'], PHP_INT_MAX, 0);
+    add_filter('get_post_metadata', [__CLASS__, 'doGetMetaData'], 10, 4);
+    add_filter('get_post_metadata', [__CLASS__, 'doGetPostThumbnailId'], 10, 4);
+    add_filter('post_type_link', [__CLASS__, 'doGetPostTypeLink'], 10, 4);
 
-    add_action('delete_post', [__CLASS__, '_deletePost']);
-    add_action('save_post', [__CLASS__, '_savePost'], 10, 2);
-    add_action('trash_post', [__CLASS__, '_trashPost']);
-    add_filter('get_post_metadata', [__CLASS__, '_getMetaData'], 10, 4);
-    add_filter('get_post_metadata', [__CLASS__, '_getPostThumbnailId'], 10, 4);
-    add_filter('post_type_link', [__CLASS__, '_getPostTypeLink'], 10, 4);
-
-    add_action('init', [$class, 'registerPostType'], -PHP_INT_MAX);
+    add_action('init', [$class, 'registerPostType'], -PHP_INT_MAX, 0);
   }
 
   public static function registerPostType() {
@@ -162,35 +159,35 @@ abstract class Base extends \Expresser\Support\Model {
     throw new Exception('A post type must override registerPostType.');
   }
 
-  public static function _deletePost($id) {
+  public static function doDeletePost($id) {
 
     do_action(implode('_', ['exp/delete', get_post_type($id)]), $id);
   }
 
-  public static function _savePost($id, WP_Post $post) {
+  public static function doSavePost($id, WP_Post $post) {
 
     do_action(implode('_', ['exp/save', $post->post_type]), $id, $post);
   }
 
-  public static function _trashPost($id) {
+  public static function doTrashPost($id) {
 
     do_action(implode('_', ['exp/trash', get_post_type($id)]), $id);
   }
 
-  public static function _getMetaData($value, $id, $key = '', $single = false) {
+  public static function doGetMetaData($value, $id, $key = '', $single = false) {
 
     do_action(implode('_', ['exp/get', get_post_type($id), 'metadata']), $value, $id, $key, $single);
   }
 
-  public static function _getPostThumbnailId($value, $id, $key = '_thumbnail_id', $single = true, $filter = true) {
+  public static function doGetPostThumbnailId($value, $id, $key = '_thumbnail_id', $single = true, $filter = true) {
 
     if (str_is($key, '_thumbnail_id') && $single) {
 
-      remove_filter('get_post_metadata', [__CLASS__, '_getPostThumbnailId'], 10, 4);
+      remove_filter('get_post_metadata', [__CLASS__, 'doGetPostThumbnailId'], 10, 4);
 
       $value = get_post_thumbnail_id($id);
 
-      add_filter('get_post_metadata', [__CLASS__, '_getPostThumbnailId'], 10, 4);
+      add_filter('get_post_metadata', [__CLASS__, 'doGetPostThumbnailId'], 10, 4);
 
       if ($filter) {
 
@@ -203,7 +200,7 @@ abstract class Base extends \Expresser\Support\Model {
     return $value;
   }
 
-  public static function _getPostTypeLink($url, WP_Post $post, $leavename = false, $sample = false) {
+  public static function doGetPostTypeLink($url, WP_Post $post, $leavename = false, $sample = false) {
 
     return apply_filters(implode('_', ["exp/$post->post_type", 'link']), $url, $post, $leavename, $sample);
   }
