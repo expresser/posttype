@@ -149,7 +149,7 @@ abstract class Base extends \Expresser\Support\Model {
     add_action('trash_post', [__CLASS__, 'refreshRewriteRules'], PHP_INT_MAX, 0);
     add_filter('get_post_metadata', [__CLASS__, 'doGetMetaData'], 10, 4);
     add_filter('get_post_metadata', [__CLASS__, 'doGetPostThumbnailId'], 10, 4);
-    add_filter('post_type_link', [__CLASS__, 'doGetPostTypeLink'], 10, 4);
+    add_filter('post_type_link', [__CLASS__, 'doPostTypeLink'], 10, 4);
 
     add_action('init', [$class, 'registerPostType'], -PHP_INT_MAX, 0);
   }
@@ -161,22 +161,22 @@ abstract class Base extends \Expresser\Support\Model {
 
   public static function doDeletePost($id) {
 
-    do_action(implode('_', ['exp/delete', get_post_type($id)]), $id);
+    static::doPostTypeAction('delete_post', get_post_type($id), compact('id'));
   }
 
   public static function doSavePost($id, WP_Post $post) {
 
-    do_action(implode('_', ['exp/save', $post->post_type]), $id, $post);
+    static::doPostTypeAction('save_post', $post->post_type, compact('id', 'post'));
   }
 
   public static function doTrashPost($id) {
 
-    do_action(implode('_', ['exp/trash', get_post_type($id)]), $id);
+    static::doPostTypeAction('trash_post', get_post_type($id), compact('id'));
   }
 
   public static function doGetMetaData($value, $id, $key = '', $single = false) {
 
-    do_action(implode('_', ['exp/get', get_post_type($id), 'metadata']), $value, $id, $key, $single);
+    return static::doPostTypeFilter('get_post_metadata', get_post_type($id), compact('value', 'id', 'key', 'single'));
   }
 
   public static function doGetPostThumbnailId($value, $id, $key = '_thumbnail_id', $single = true, $filter = true) {
@@ -191,7 +191,7 @@ abstract class Base extends \Expresser\Support\Model {
 
       if ($filter) {
 
-        $value = apply_filters(implode('_', ['exp/get', get_post_type($id), 'thumbnail', 'id']), $value, $id);
+        $value = static::doPostTypeFilter('get_post_thumbnail_id', get_post_type($id), compact('value', 'id'));
 
         $value = is_numeric($value) ? (int)$value : null;
       }
@@ -200,9 +200,19 @@ abstract class Base extends \Expresser\Support\Model {
     return $value;
   }
 
-  public static function doGetPostTypeLink($url, WP_Post $post, $leavename = false, $sample = false) {
+  public static function doPostTypeLink($url, WP_Post $post, $leavename = false, $sample = false) {
 
-    return apply_filters(implode('_', ["exp/$post->post_type", 'link']), $url, $post, $leavename, $sample);
+    return static::doPostTypeFilter('post_type_link', $post->post_type, compact('url', 'post', 'leavename', 'sample'));
+  }
+
+  protected static function doPostTypeAction($action, $type, array $args = []) {
+
+    static::doAction(implode('/', [$type, $action]), $args);
+  }
+
+  protected static function doPostTypeFilter($filter, $type, array $args = []) {
+
+    return static::doFilter(implode('/', [$type, $filter]), $args);
   }
 
   public abstract function postType();
