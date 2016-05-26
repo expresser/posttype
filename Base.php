@@ -133,35 +133,19 @@ abstract class Base extends \Expresser\Support\Model {
     return $this->getAdjacentPost($inSameTerm, $excludedTerms, true, $taxonomy);
   }
 
-  public static function getPostThumbnailId($id) {
-
-    return static::doGetPostThumbnailId(null, $id, '_thumbnail_id', true, false);
-  }
-
-  public static function registerHooks($class) {
-
-    add_action('delete_post', [__CLASS__, 'doDeletePost'], 10, 1);
-    add_action('delete_post', [__CLASS__, 'refreshRewriteRules'], PHP_INT_MAX, 0);
-    add_action('init', [__CLASS__, 'doRefreshRewriteTags'], 10, 0);
-    add_action('save_post', [__CLASS__, 'doSavePost'], 10, 3);
-    add_action('save_post', [__CLASS__, 'refreshRewriteRules'], PHP_INT_MAX, 0);
-    add_action('trash_post', [__CLASS__, 'doTrashPost'], 10, 1);
-    add_action('trash_post', [__CLASS__, 'refreshRewriteRules'], PHP_INT_MAX, 0);
-    add_filter('get_post_metadata', [__CLASS__, 'doGetMetaData'], 10, 4);
-    add_filter('get_post_metadata', [__CLASS__, 'doGetPostThumbnailId'], 10, 4);
-    add_filter('post_type_link', [__CLASS__, 'doPostTypeLink'], 10, 4);
-
-    add_action('init', [$class, 'registerPostType'], -PHP_INT_MAX, 0);
-  }
-
-  public static function registerPostType() {
-
-    throw new Exception('A post type must override registerPostType.');
-  }
-
   public static function doDeletePost($id) {
 
     static::doPostTypeAction('delete_post', get_post_type($id), compact('id'));
+  }
+
+  public static function doRefreshRewrites($id = 0) {
+
+    $type = get_post_type($id);
+
+    if (static::doPostTypeFilter('refreshRewrites', $type, compact('id'))) {
+
+      parent::doRefreshRewrites($id, $type);
+    }
   }
 
   public static function doSavePost($id, WP_Post $post) {
@@ -203,6 +187,32 @@ abstract class Base extends \Expresser\Support\Model {
   public static function doPostTypeLink($url, WP_Post $post, $leavename = false, $sample = false) {
 
     return static::doPostTypeFilter('post_type_link', $post->post_type, compact('url', 'post', 'leavename', 'sample'));
+  }
+
+  public static function getPostThumbnailId($id) {
+
+    return static::doGetPostThumbnailId(null, $id, '_thumbnail_id', true, false);
+  }
+
+  public static function registerHooks($class) {
+
+    add_action('delete_post', [__CLASS__, 'doDeletePost'], 10, 1);
+    add_action('delete_post', [__CLASS__, 'doRefreshRewrites'], PHP_INT_MAX, 1);
+    add_action('init', [__CLASS__, 'doRefreshRewriteTags'], 10, 0);
+    add_action('save_post', [__CLASS__, 'doSavePost'], 10, 3);
+    add_action('save_post', [__CLASS__, 'doRefreshRewrites'], PHP_INT_MAX, 1);
+    add_action('trash_post', [__CLASS__, 'doTrashPost'], 10, 1);
+    add_action('trash_post', [__CLASS__, 'doRefreshRewrites'], PHP_INT_MAX, 1);
+    add_filter('get_post_metadata', [__CLASS__, 'doGetMetaData'], 10, 4);
+    add_filter('get_post_metadata', [__CLASS__, 'doGetPostThumbnailId'], 10, 4);
+    add_filter('post_type_link', [__CLASS__, 'doPostTypeLink'], 10, 4);
+
+    add_action('init', [$class, 'registerPostType'], -PHP_INT_MAX, 0);
+  }
+
+  public static function registerPostType() {
+
+    throw new Exception('A post type must override registerPostType.');
   }
 
   protected static function doPostTypeAction($action, $type, array $args = []) {
