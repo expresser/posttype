@@ -176,9 +176,9 @@ abstract class Base extends \Expresser\Support\Model {
       if ($filter) {
 
         $value = static::doPostTypeFilter('get_post_thumbnail_id', get_post_type($id), compact('value', 'id'));
-
-        $value = is_numeric($value) ? (int)$value : null;
       }
+
+      $value = is_numeric($value) ? (int)$value : null;
     }
 
     return $value;
