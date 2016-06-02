@@ -16,6 +16,6 @@ trait Tags {
 
   public function tags() {
 
-    return $this->tags = Tag::wherePost($this->ID)->get();
+    return $this->tags = Tag::query()->post($this->ID)->get();
   }
 }

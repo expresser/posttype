@@ -6,7 +6,7 @@ trait Categories {
 
   public function categories() {
 
-    return $this->categories = Category::wherePost($this->ID)->get();
+    return $this->categories = Category::query()->post($this->ID)->get();
   }
 
   public function hasCategories(array $categories = []) {

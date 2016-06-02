@@ -4,7 +4,7 @@ trait Children {
 
   public function children() {
 
-    return $this->children = self::whereParent($this->ID)->orderBy('menu_order', 'ASC')->get();
+    return $this->children = self::query()->parent($this->ID)->orderBy('menu_order', 'ASC')->get();
   }
 
   public function hasChildren() {

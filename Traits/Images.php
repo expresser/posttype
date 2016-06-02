@@ -11,7 +11,7 @@ trait Images {
 
   public function images() {
 
-    $images = Image::whereParent($this->ID)->get();
+    $images = Image::query()->parent($this->ID)->get();
 
     if ($this->hasFeaturedImage()) $images->push($this->featured_image);
 
