@@ -13,10 +13,10 @@ abstract class Base extends \Expresser\Support\Model {
 
   public function __construct(WP_Post $post = null) {
 
-    $this->post = $post ?: new WP_Post((object)array(
+    $this->post = $post ?: new WP_Post((object)[
       'post_status' => $this->post_status,
       'post_type' => $this->post_type,
-    ));
+    ]);
 
     parent::__construct($this->post->to_array());
   }
