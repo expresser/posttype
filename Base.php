@@ -198,7 +198,6 @@ abstract class Base extends \Expresser\Support\Model {
 
     add_action('delete_post', [__CLASS__, 'doDeletePost'], 10, 1);
     add_action('delete_post', [__CLASS__, 'doRefreshRewrites'], PHP_INT_MAX, 1);
-    add_action('init', [__CLASS__, 'doRefreshRewriteTags'], 10, 0);
     add_action('save_post', [__CLASS__, 'doSavePost'], 10, 3);
     add_action('save_post', [__CLASS__, 'doRefreshRewrites'], PHP_INT_MAX, 1);
     add_action('trash_post', [__CLASS__, 'doTrashPost'], 10, 1);
