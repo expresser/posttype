@@ -70,6 +70,11 @@ abstract class Base extends \Expresser\Support\Model {
     return wp_insert_post($this->getDirty());
   }
 
+  public function isPasswordRequired() {
+
+    return post_password_required($this->ID);
+  }
+
   public function newQuery() {
 
     return (new Query(new WP_Query))->setModel($this)->type($this->post_type)->paginate(false);
@@ -189,6 +194,16 @@ abstract class Base extends \Expresser\Support\Model {
     return static::doPostTypeFilter('post_type_link', $post->post_type, compact('url', 'post', 'leavename', 'sample'));
   }
 
+  public static function doThePosts(array $posts, WP_Query $query) {
+
+    if ($postType = $query->get('post_type')) {
+
+      $posts = static::doPostTypeFilter('the_posts', $postType, compact('posts', 'query'));
+    }
+
+    return $posts;
+  }
+
   public static function getPostThumbnailId($id) {
 
     return static::doGetPostThumbnailId(null, $id, '_thumbnail_id', true, false);
@@ -205,6 +220,7 @@ abstract class Base extends \Expresser\Support\Model {
     add_filter('get_post_metadata', [__CLASS__, 'doGetMetaData'], 10, 4);
     add_filter('get_post_metadata', [__CLASS__, 'doGetPostThumbnailId'], 10, 4);
     add_filter('post_type_link', [__CLASS__, 'doPostTypeLink'], 10, 4);
+    add_filter('the_posts', [__CLASS__, 'doThePosts'], PHP_INT_MAX, 2);
 
     add_action('init', [$class, 'registerPostType'], -PHP_INT_MAX, 0);
   }
