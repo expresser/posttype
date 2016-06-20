@@ -77,7 +77,9 @@ abstract class Base extends \Expresser\Support\Model {
 
   public function newQuery() {
 
-    return (new Query(new WP_Query))->setModel($this)->type($this->post_type)->paginate(false);
+    $query = (new Query(new WP_Query))->setModel($this);
+
+    return $query->type($this->post_type)->paginate(false);
   }
 
   public function nextPost() {
