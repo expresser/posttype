@@ -21,7 +21,7 @@ class Attachment extends Native {
 
   public function postStatus() {
 
-    return array('draft', 'inherit');
+    return ['draft', 'inherit'];
   }
 
   public function postType() {

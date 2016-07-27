@@ -448,7 +448,14 @@ class Query extends \Expresser\Support\Query {
 
   public function meta($key, $value, $compare = '=', $type = 'CHAR') {
 
-    $this->metas[] = compact('key', 'value', 'compare', 'type');
+    $meta = compact('key', 'value', 'compare', 'type');
+
+    if (in_array($compare, ['EXISTS', 'NOT EXISTS'])) {
+
+      unset($meta['value']);
+    }
+
+    $this->metas[] = $meta;
 
     $this->meta_query = $this->metas;
 
