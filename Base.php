@@ -196,7 +196,7 @@ abstract class Base extends \Expresser\Support\Model {
     return static::doPostTypeFilter('post_type_link', $post->post_type, compact('url', 'post', 'leavename', 'sample'));
   }
 
-  public static function doThePosts(array $posts, WP_Query $query) {
+  public static function doThePosts($posts, WP_Query $query) {
 
     if ($postType = $query->get('post_type')) {
 
