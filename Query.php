@@ -7,13 +7,12 @@ use WP_Query;
 
 class Query extends \Expresser\Support\Query {
 
-  protected $metas = [];
-
-  protected $taxonomies = [];
-
   private $statuses = ['publish', 'pending', 'draft', 'auto-draft', 'future', 'private', 'inherit', 'trash'];
 
   public function __construct(WP_Query $query) {
+
+    $this->meta_query = [];
+    $this->tax_query = [];
 
     parent::__construct($query);
   }
@@ -45,16 +44,7 @@ class Query extends \Expresser\Support\Query {
 
   public function limit($limit) {
 
-    $this->paginate($limit);
-
-    return $this;
-  }
-
-  public function get() {
-
-    $posts = $this->query->get_posts();
-
-    return $this->getModels($posts);
+    return $this->paginate($limit);
   }
 
   public function author($id) {
@@ -189,9 +179,9 @@ class Query extends \Expresser\Support\Query {
 
   public function taxonomy($taxonomy, $terms, $field = 'term_id', $operator = 'IN', $includeChildren = true) {
 
-    $this->taxonomies[] = compact('taxonomy', 'field', 'terms', 'includeChildren', 'operator');
+    $tax_query = compact('taxonomy', 'field', 'terms', 'includeChildren', 'operator');
 
-    $this->tax_query = $this->taxonomies;
+    $this->tax_query = array_merge($this->tax_query, $tax_query);
 
     return $this;
   }
@@ -200,12 +190,10 @@ class Query extends \Expresser\Support\Query {
 
     call_user_func($callback, $this);
 
-    if (count($this->taxonomies) > 1) {
+    if (count($this->tax_query) > 1) {
 
-      $this->taxonomies = array_merge(['relation' => $relation], $this->taxonomies);
+      $this->tax_query = array_merge(['relation' => $relation], $this->tax_query);
     }
-
-    $this->tax_query = $this->taxonomies;
 
     return $this;
   }
@@ -216,9 +204,7 @@ class Query extends \Expresser\Support\Query {
 
     $query->taxonomies($callback, $relation);
 
-    $this->taxonomies = array_merge($this->taxonomies, [$query->tax_query]);
-
-    $this->tax_query = $this->taxonomies;
+    $this->tax_query = array_merge($this->tax_query, [$query->tax_query]);
 
     return $this;
   }
@@ -416,7 +402,10 @@ class Query extends \Expresser\Support\Query {
   }
 
   // TODO: Date Query implementation
-  public function date() {}
+  public function date() {
+
+    return $this;
+  }
 
   public function metaCompare($compare) {
 
@@ -448,16 +437,14 @@ class Query extends \Expresser\Support\Query {
 
   public function meta($key, $value, $compare = '=', $type = 'CHAR') {
 
-    $meta = compact('key', 'value', 'compare', 'type');
+    $meta_query = compact('key', 'value', 'compare', 'type');
 
     if (in_array($compare, ['EXISTS', 'NOT EXISTS'])) {
 
-      unset($meta['value']);
+      unset($meta_query['value']);
     }
 
-    $this->metas[] = $meta;
-
-    $this->meta_query = $this->metas;
+    $this->meta_query = array_merge($this->meta_query, $meta_query);
 
     return $this;
   }
@@ -466,12 +453,10 @@ class Query extends \Expresser\Support\Query {
 
     call_user_func($callback, $this);
 
-    if (count($this->metas) > 1) {
+    if (count($this->meta_query) > 1) {
 
-      $this->metas = array_merge(['relation' => $relation], $this->metas);
+      $this->meta_query = array_merge(['relation' => $relation], $this->meta_query);
     }
-
-    $this->meta_query = $this->metas;
 
     return $this;
   }
@@ -482,9 +467,7 @@ class Query extends \Expresser\Support\Query {
 
     $query->metas($callback, $relation);
 
-    $this->metas = array_merge($this->metas, [$query->meta_query]);
-
-    $this->meta_query = $this->metas;
+    $this->meta_query = array_merge($this->meta_query, [$query->meta_query]);
 
     return $this;
   }
