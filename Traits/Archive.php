@@ -6,8 +6,11 @@ trait Archive {
 
   public static function getArchiveUrl() {
 
-    $url = get_post_type_archive_link((new static)->type);
+    $url = get_post_type_archive_link((new static)->post_type);
 
-    if (Filter::isUrl($url)) return $url;
+    if (Filter::isUrl($url)) {
+
+      return $url;
+    }
   }
 }

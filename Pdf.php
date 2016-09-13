@@ -2,13 +2,10 @@
 
 class Pdf extends Attachment {
 
-  public function mimeType() {
-
-    return 'application/pdf';
-  }
+  public $post_mime_type = 'application/pdf';
 
   public function newQuery() {
 
-    return parent::newQuery()->mimeType($this->mime_type);
+    return parent::newQuery()->mimeType($this->post_mime_type);
   }
 }

@@ -13,7 +13,10 @@ trait Images {
 
     $images = Image::query()->parent($this->ID)->get();
 
-    if ($this->hasFeaturedImage()) $images->push($this->featured_image);
+    if ($this->hasFeaturedImage()) {
+
+      $images->push($this->featured_image);
+    }
 
     return $this->images = $images;
   }

@@ -4,13 +4,18 @@ use Expresser\Contracts\Image\Renderable;
 
 class Image extends Attachment implements Renderable {
 
+  public $post_mime_type = 'image';
+
   protected $classNames;
 
   public function alt() {
 
     $alt = get_post_meta($this->ID, '_wp_attachment_image_alt', true);
 
-    if (!empty($alt)) return $this->alt = $alt;
+    if (!empty($alt)) {
+
+      return $this->alt = $alt;
+    }
   }
 
   public function getClassNames($classNames) {
@@ -24,14 +29,20 @@ class Image extends Attachment implements Renderable {
 
     $url = $this->getSizeUrl($size);
 
-    if (is_null($url)) $url = $this->url;
+    if (is_null($url)) {
+
+      $url = $this->url;
+    }
 
     return $url;
   }
 
   public function getSizeUrl($size) {
 
-    if (array_key_exists($size, $this->sizes)) return $this->sizes[$size]['url'];
+    if (array_key_exists($size, $this->sizes)) {
+
+      return $this->sizes[$size]['url'];
+    }
   }
 
   public function height() {
@@ -60,7 +71,10 @@ class Image extends Attachment implements Renderable {
 
     if (is_array($meta)) {
 
-      if (!isset($meta['sizes'])) $meta['sizes'] = [];
+      if (!isset($meta['sizes'])) {
+
+        $meta['sizes'] = [];
+      }
 
       foreach ($meta['sizes'] as $name => &$size) {
 
@@ -74,14 +88,9 @@ class Image extends Attachment implements Renderable {
     }
   }
 
-  public function mimeType() {
-
-    return 'image';
-  }
-
   public function newQuery() {
 
-    return parent::newQuery()->mimeType($this->mime_type);
+    return parent::newQuery()->mimeType($this->post_mime_type);
   }
 
   public function render($classNames = null, $alt = null, $title = null) {

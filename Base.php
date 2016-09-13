@@ -7,8 +7,6 @@ use WP_Query;
 
 abstract class Base extends \Expresser\Support\Model {
 
-  protected $fieldPrefix = 'post_';
-
   protected $post;
 
   public function __construct(WP_Post $post = null) {
@@ -36,16 +34,22 @@ abstract class Base extends \Expresser\Support\Model {
     return delete_post_meta($this->ID, $key, $value);
   }
 
-  public function getAuthorAttribute($value) {
+  public function getPostAuthorAttribute($value) {
 
-    if (is_numeric($value)) $value = (int)$value;
+    if (is_numeric($value)) {
+
+      $value = (int)$value;
+    }
 
     return $value;
   }
 
   public function getCommentCountAttribute($value) {
 
-    if (is_numeric($value)) $value = (int)$value;
+    if (is_numeric($value)) {
+
+      $value = (int)$value;
+    }
 
     return $value;
   }
@@ -127,7 +131,10 @@ abstract class Base extends \Expresser\Support\Model {
 
     $post = $globalPost;
 
-    if ($adjacentPost instanceof WP_Post) return self::make($adjacentPost);
+    if ($adjacentPost instanceof WP_Post) {
+
+      return self::make($adjacentPost);
+    }
   }
 
   protected function getNextPost($inSameTerm = false, array $excludedTerms = [], $taxonomy = 'category') {

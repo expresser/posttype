@@ -2,30 +2,36 @@
 
 trait Content {
 
-  protected $suppressContentFilters = false;
+  protected $suppressPostContentFilters = false;
 
-  public function getContentAttribute($value) {
+  public function getPostContentAttribute($value) {
 
-    if (post_password_required($this->ID)) $value = get_the_password_form($this->ID);
+    if (post_password_required($this->ID)) {
 
-    if (!$this->suppressContentFilters) {
+      $value = get_the_password_form($this->ID);
+    }
+
+    if (!$this->suppressPostContentFilters) {
 
       $value = apply_filters('the_content', $value);
     }
 
-    $this->suppressContentFilters = false;
+    $this->suppressPostContentFilters = false;
 
-    if (!empty($value)) return $value;
+    if (!empty($value)) {
+
+      return $value;
+    }
   }
 
-  public function hasContent() {
+  public function hasPostContent() {
 
-    return !empty($this->content);
+    return !empty($this->post_content);
   }
 
-  public function suppressContentFilters($suppressContentFilters) {
+  public function suppressPostContentFilters($suppressPostContentFilters) {
 
-    $this->suppressContentFilters = $suppressContentFilters;
+    $this->suppressPostContentFilters = $suppressPostContentFilters;
 
     return $this;
   }

@@ -18,7 +18,10 @@ trait FeaturedImage {
 
     $id = get_post_thumbnail_id($this->ID);
 
-    if (is_numeric($id)) return $this->featured_image = Image::find((int)$id);
+    if (is_numeric($id)) {
+
+      return $this->featured_image = Image::find((int)$id);
+    }
   }
 
   public function hasFeaturedImage() {

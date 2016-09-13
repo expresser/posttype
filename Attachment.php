@@ -6,12 +6,18 @@ class Attachment extends Native {
 
   public function caption() {
 
-    if (!empty($this->excerpt)) return $this->excerpt;
+    if (!empty($this->post_excerpt)) {
+
+      return $this->post_excerpt;
+    }
   }
 
   public function description() {
 
-    if (!empty($this->content)) return $this->content;
+    if (!empty($this->post_content)) {
+
+      return $this->post_content;
+    }
   }
 
   public function newQuery() {
@@ -33,13 +39,19 @@ class Attachment extends Native {
 
     $src = wp_get_attachment_image_src($this->ID, 'thumbnail', true);
 
-    if (is_array($src)) return $this->thumbnail_url = $src[0];
+    if (is_array($src)) {
+
+      return $this->thumbnail_url = $src[0];
+    }
   }
 
   public function url() {
 
     $url = wp_get_attachment_url($this->ID);
 
-    if (Filter::isUrl($url)) return $this->url = $url;
+    if (Filter::isUrl($url)) {
+
+      return $this->url = $url;
+    }
   }
 }

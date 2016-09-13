@@ -2,59 +2,59 @@
 
 trait Excerpt {
 
-  protected $excerptLength = 55;
-  protected $excerptMore = null;
-  protected $suppressExcerptFilters = false;
+  protected $postExcerptLength = 55;
+  protected $postExcerptMore = null;
+  protected $suppressPostExcerptFilters = false;
 
-  public function getExcerptAttribute($value) {
+  public function getPostExcerptAttribute($value) {
 
     $value = apply_filters('the_excerpt', $value);
 
     if (empty($value)) {
 
-      $value = $this->suppressContentFilters(true)->content;
+      $value = $this->suppressPostContentFilters(true)->post_content;
       $value = strip_shortcodes($value);
       $value = apply_filters('the_content', $value);
       $value = str_replace(']]>', ']]&gt;', $value);
 
-      if (!$this->suppressExcerptFilters) {
+      if (!$this->suppressPostExcerptFilters) {
 
-        $value = wp_trim_words($value, apply_filters('excerpt_length', $this->excerptLength), apply_filters('excerpt_more', $this->excerptMore));
+        $value = wp_trim_words($value, apply_filters('excerpt_length', $this->postExcerptLength), apply_filters('excerpt_more', $this->postExcerptMore));
       }
     }
 
-    $this->suppressExcerptFilters = false;
+    $this->suppressPostExcerptFilters = false;
 
     return $value;
   }
 
-  public function getExcerptLength() {
+  public function getPostExcerptLength() {
 
-    return $this->excerptLength;
+    return $this->postExcerptLength;
   }
 
-  public function getExcerptMore() {
+  public function getPostExcerptMore() {
 
-    return $this->excerptMore;
+    return $this->postExcerptMore;
   }
 
-  public function setExcerptLength($excerptLength) {
+  public function setPostExcerptLength($postExcerptLength) {
 
-    $this->excerptLength = $excerptLength;
+    $this->postExcerptLength = $postExcerptLength;
 
     return $this;
   }
 
-  public function setExcerptMore($excerptMore) {
+  public function setPostExcerptMore($postExcerptMore) {
 
-    $this->excerptMore = $excerptMore;
+    $this->postExcerptMore = $postExcerptMore;
 
     return $this;
   }
 
-  public function suppressExcerptFilters($suppressExcerptFilters) {
+  public function suppressPostExcerptFilters($suppressPostExcerptFilters) {
 
-    $this->suppressExcerptFilters = $suppressExcerptFilters;
+    $this->suppressPostExcerptFilters = $suppressPostExcerptFilters;
 
     return $this;
   }

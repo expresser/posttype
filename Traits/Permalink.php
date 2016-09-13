@@ -9,7 +9,10 @@ trait Permalink {
 
     $permalink = get_permalink($this->ID);
 
-    if (Filter::isUrl($permalink)) return $this->permalink = $permalink;
+    if (Filter::isUrl($permalink)) {
+
+      return $this->permalink = $permalink;
+    }
   }
 
   public function url() {
