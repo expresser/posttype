@@ -177,11 +177,11 @@ class Query extends \Expresser\Support\Query {
     return $this;
   }
 
-  public function taxonomy($taxonomy, $terms, $field = 'term_id', $operator = 'IN', $includeChildren = true) {
+  public function taxonomy($taxonomy, $terms, $field = 'term_id', $operator = 'IN', $include_children = true) {
 
-    $tax_query = compact('taxonomy', 'field', 'terms', 'includeChildren', 'operator');
+    $tax_query = compact('taxonomy', 'field', 'terms', 'include_children', 'operator');
 
-    $this->tax_query = array_merge($this->tax_query, $tax_query);
+    $this->tax_query = array_merge($this->tax_query, [$tax_query]);
 
     return $this;
   }
@@ -444,7 +444,7 @@ class Query extends \Expresser\Support\Query {
       unset($meta_query['value']);
     }
 
-    $this->meta_query = array_merge($this->meta_query, $meta_query);
+    $this->meta_query = array_merge($this->meta_query, [$meta_query]);
 
     return $this;
   }
