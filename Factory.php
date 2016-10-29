@@ -1,59 +1,56 @@
-<?php namespace Expresser\PostType;
+<?php
+
+namespace Expresser\PostType;
 
 use InvalidArgumentException;
-
 use WP_Post;
 
-class Factory {
+class Factory
+{
+    protected static $classCache = [];
 
-  protected static $classCache = [];
+    public static function resolve(WP_Post $post)
+    {
+        $class = static::normalizeClassName($post->post_type);
 
-  public static function resolve(WP_Post $post) {
-
-    $class = static::normalizeClassName($post->post_type);
-
-    return new $class($post);
-  }
-
-  protected static function normalizeClassName($key) {
-
-    if (isset(static::$classCache[$key])) {
-
-			return static::$classCache[$key];
-		}
-
-    $classname = static::convertToNamespace($key);
-
-    if (!class_exists($classname)) {
-
-      $classname = static::convertToAlias($key);
-
-      if (!class_exists($classname)) {
-
-        $classname = __NAMESPACE__ . '\\' . $classname;
-
-        if (!class_exists($classname)) {
-
-          throw new InvalidArgumentException('Class type not found.');
-        }
-      }
+        return new $class($post);
     }
 
-    return static::$classCache[$key] = $classname;
-  }
+    protected static function normalizeClassName($key)
+    {
+        if (isset(static::$classCache[$key])) {
+            return static::$classCache[$key];
+        }
 
-  protected static function convertToWords($value) {
+        $classname = static::convertToNamespace($key);
 
-    return ucwords(str_replace(['-', '_'], ' ', $value));
-  }
+        if (!class_exists($classname)) {
+            $classname = static::convertToAlias($key);
 
-  protected static function convertToAlias($value) {
+            if (!class_exists($classname)) {
+                $classname = __NAMESPACE__.'\\'.$classname;
 
-    return str_replace(' ', '', static::convertToWords($value));
-  }
+                if (!class_exists($classname)) {
+                    throw new InvalidArgumentException('Class type not found.');
+                }
+            }
+        }
 
-  protected static function convertToNamespace($value) {
+        return static::$classCache[$key] = $classname;
+    }
 
-    return str_replace(' ', '\\', static::convertToWords($value));
-  }
+    protected static function convertToWords($value)
+    {
+        return ucwords(str_replace(['-', '_'], ' ', $value));
+    }
+
+    protected static function convertToAlias($value)
+    {
+        return str_replace(' ', '', static::convertToWords($value));
+    }
+
+    protected static function convertToNamespace($value)
+    {
+        return str_replace(' ', '\\', static::convertToWords($value));
+    }
 }

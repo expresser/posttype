@@ -1,38 +1,37 @@
-<?php namespace Expresser\PostType\Traits;
+<?php
 
-trait Content {
+namespace Expresser\PostType\Traits;
 
-  protected $suppressPostContentFilters = false;
+trait Content
+{
+    protected $suppressPostContentFilters = false;
 
-  public function getPostContentAttribute($value) {
+    public function getPostContentAttribute($value)
+    {
+        if (post_password_required($this->ID)) {
+            $value = get_the_password_form($this->ID);
+        }
 
-    if (post_password_required($this->ID)) {
+        if (!$this->suppressPostContentFilters) {
+            $value = apply_filters('the_content', $value);
+        }
 
-      $value = get_the_password_form($this->ID);
+        $this->suppressPostContentFilters = false;
+
+        if (!empty($value)) {
+            return $value;
+        }
     }
 
-    if (!$this->suppressPostContentFilters) {
-
-      $value = apply_filters('the_content', $value);
+    public function hasPostContent()
+    {
+        return !empty($this->post_content);
     }
 
-    $this->suppressPostContentFilters = false;
+    public function suppressPostContentFilters($suppressPostContentFilters)
+    {
+        $this->suppressPostContentFilters = $suppressPostContentFilters;
 
-    if (!empty($value)) {
-
-      return $value;
+        return $this;
     }
-  }
-
-  public function hasPostContent() {
-
-    return !empty($this->post_content);
-  }
-
-  public function suppressPostContentFilters($suppressPostContentFilters) {
-
-    $this->suppressPostContentFilters = $suppressPostContentFilters;
-
-    return $this;
-  }
 }

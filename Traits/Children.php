@@ -1,14 +1,16 @@
-<?php namespace Expresser\PostType\Traits;
+<?php
 
-trait Children {
+namespace Expresser\PostType\Traits;
 
-  public function children() {
+trait Children
+{
+    public function children()
+    {
+        return $this->children = self::query()->parent($this->ID)->orderBy('menu_order', 'ASC')->get();
+    }
 
-    return $this->children = self::query()->parent($this->ID)->orderBy('menu_order', 'ASC')->get();
-  }
-
-  public function hasChildren() {
-
-    return $this->children->count() > 0;
-  }
+    public function hasChildren()
+    {
+        return $this->children->count() > 0;
+    }
 }

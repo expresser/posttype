@@ -1,12 +1,15 @@
-<?php namespace Expresser\PostType;
+<?php
 
-class Post extends Native {
-  use \Expresser\PostType\Traits\Content,
+namespace Expresser\PostType;
+
+class Post extends Native
+{
+    use \Expresser\PostType\Traits\Content,
       \Expresser\PostType\Traits\Excerpt,
       \Expresser\PostType\Traits\Permalink;
 
-  public function postType() {
-
-    return 'post';
-  }
+    public function postType()
+    {
+        return 'post';
+    }
 }

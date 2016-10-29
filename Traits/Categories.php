@@ -1,26 +1,28 @@
-<?php namespace Expresser\PostType\Traits;
+<?php
+
+namespace Expresser\PostType\Traits;
 
 use Expresser\Taxonomy\Category;
 
-trait Categories {
+trait Categories
+{
+    public function categories()
+    {
+        return $this->categories = Category::query()->post($this->ID)->get();
+    }
 
-  public function categories() {
+    public function hasCategories(array $categories = [])
+    {
+        return $this->hasCategory($categories);
+    }
 
-    return $this->categories = Category::query()->post($this->ID)->get();
-  }
+    public function hasCategory($category)
+    {
+        return has_category($category, $this->ID);
+    }
 
-  public function hasCategories(array $categories = []) {
-
-    return $this->hasCategory($categories);
-  }
-
-  public function hasCategory($category) {
-
-    return has_category($category, $this->ID);
-  }
-
-  public function inCategory($category) {
-
-    return in_category($category, $this->ID);
-  }
+    public function inCategory($category)
+    {
+        return in_category($category, $this->ID);
+    }
 }
