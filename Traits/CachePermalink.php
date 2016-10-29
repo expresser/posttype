@@ -1,41 +1,39 @@
-<?php namespace Expresser\PostType\Traits;
+<?php
+
+namespace Expresser\PostType\Traits;
 
 use Closure;
 
-trait CachePermalink {
+trait CachePermalink
+{
+    protected static $permalinkCache = [];
 
-  protected static $permalinkCache = [];
+    protected static function getPermalink($url, Closure $callback = null)
+    {
+        $key = md5($url);
 
-  protected static function getPermalink($url, Closure $callback = null) {
+        $cachedUrl = static::getCachedPermalink($key);
 
-    $key = md5($url);
+        if (is_null($cachedUrl)) {
+            $url = is_callable($callback) ? $callback($url) : $url;
 
-    $cachedUrl = static::getCachedPermalink($key);
+            static::setCachedPermalink($key, $url);
+        } else {
+            $url = $cachedUrl;
+        }
 
-    if (is_null($cachedUrl)) {
-
-      $url = is_callable($callback) ? $callback($url) : $url;
-
-      static::setCachedPermalink($key, $url);
+        return $url;
     }
-    else {
 
-      $url = $cachedUrl;
+    protected static function getCachedPermalink($key)
+    {
+        if (array_key_exists($key, static::$permalinkCache)) {
+            return static::$permalinkCache[$key];
+        }
     }
 
-    return $url;
-  }
-
-  protected static function getCachedPermalink($key) {
-
-    if (array_key_exists($key, static::$permalinkCache)) {
-
-      return static::$permalinkCache[$key];
+    protected static function setCachedPermalink($key, $url)
+    {
+        static::$permalinkCache[$key] = $url;
     }
-  }
-
-  protected static function setCachedPermalink($key, $url) {
-
-    static::$permalinkCache[$key] = $url;
-  }
 }

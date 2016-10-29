@@ -1,61 +1,61 @@
-<?php namespace Expresser\PostType\Traits;
+<?php
 
-trait Excerpt {
+namespace Expresser\PostType\Traits;
 
-  protected $postExcerptLength = 55;
-  protected $postExcerptMore = null;
-  protected $suppressPostExcerptFilters = false;
+trait Excerpt
+{
+    protected $postExcerptLength = 55;
+    protected $postExcerptMore = null;
+    protected $suppressPostExcerptFilters = false;
 
-  public function getPostExcerptAttribute($value) {
+    public function getPostExcerptAttribute($value)
+    {
+        $value = apply_filters('the_excerpt', $value);
 
-    $value = apply_filters('the_excerpt', $value);
+        if (empty($value)) {
+            $value = $this->suppressPostContentFilters(true)->post_content;
+            $value = strip_shortcodes($value);
+            $value = apply_filters('the_content', $value);
+            $value = str_replace(']]>', ']]&gt;', $value);
 
-    if (empty($value)) {
+            if (!$this->suppressPostExcerptFilters) {
+                $value = wp_trim_words($value, apply_filters('excerpt_length', $this->postExcerptLength), apply_filters('excerpt_more', $this->postExcerptMore));
+            }
+        }
 
-      $value = $this->suppressPostContentFilters(true)->post_content;
-      $value = strip_shortcodes($value);
-      $value = apply_filters('the_content', $value);
-      $value = str_replace(']]>', ']]&gt;', $value);
+        $this->suppressPostExcerptFilters = false;
 
-      if (!$this->suppressPostExcerptFilters) {
-
-        $value = wp_trim_words($value, apply_filters('excerpt_length', $this->postExcerptLength), apply_filters('excerpt_more', $this->postExcerptMore));
-      }
+        return $value;
     }
 
-    $this->suppressPostExcerptFilters = false;
+    public function getPostExcerptLength()
+    {
+        return $this->postExcerptLength;
+    }
 
-    return $value;
-  }
+    public function getPostExcerptMore()
+    {
+        return $this->postExcerptMore;
+    }
 
-  public function getPostExcerptLength() {
+    public function setPostExcerptLength($postExcerptLength)
+    {
+        $this->postExcerptLength = $postExcerptLength;
 
-    return $this->postExcerptLength;
-  }
+        return $this;
+    }
 
-  public function getPostExcerptMore() {
+    public function setPostExcerptMore($postExcerptMore)
+    {
+        $this->postExcerptMore = $postExcerptMore;
 
-    return $this->postExcerptMore;
-  }
+        return $this;
+    }
 
-  public function setPostExcerptLength($postExcerptLength) {
+    public function suppressPostExcerptFilters($suppressPostExcerptFilters)
+    {
+        $this->suppressPostExcerptFilters = $suppressPostExcerptFilters;
 
-    $this->postExcerptLength = $postExcerptLength;
-
-    return $this;
-  }
-
-  public function setPostExcerptMore($postExcerptMore) {
-
-    $this->postExcerptMore = $postExcerptMore;
-
-    return $this;
-  }
-
-  public function suppressPostExcerptFilters($suppressPostExcerptFilters) {
-
-    $this->suppressPostExcerptFilters = $suppressPostExcerptFilters;
-
-    return $this;
-  }
+        return $this;
+    }
 }

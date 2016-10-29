@@ -1,22 +1,24 @@
-<?php namespace Expresser\PostType\Traits;
+<?php
+
+namespace Expresser\PostType\Traits;
 
 use Expresser\Support\Filter;
 
-trait Permalink {
-  use CachePermalink;
+trait Permalink
+{
+    use CachePermalink;
 
-  public function permalink() {
+    public function permalink()
+    {
+        $permalink = get_permalink($this->ID);
 
-    $permalink = get_permalink($this->ID);
-
-    if (Filter::isUrl($permalink)) {
-
-      return $this->permalink = $permalink;
+        if (Filter::isUrl($permalink)) {
+            return $this->permalink = $permalink;
+        }
     }
-  }
 
-  public function url() {
-
-    return $this->permalink;
-  }
+    public function url()
+    {
+        return $this->permalink;
+    }
 }
