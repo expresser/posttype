@@ -64,19 +64,15 @@ class Query extends \Expresser\Support\Query
     public function authors(array $ids, $operator = 'IN')
     {
         switch ($operator) {
-
-      case 'IN':
-
-        $this->author__in = $ids; break;
-
-      case 'NOT IN':
-
-        $this->author__not_in = $ids; break;
-
-      default:
-
-        throw new InvalidArgumentException();
-    }
+            case 'IN':
+                $this->author__in = $ids;
+                break;
+            case 'NOT IN':
+                $this->author__not_in = $ids;
+                break;
+            default:
+                throw new InvalidArgumentException();
+        }
 
         return $this;
     }
@@ -97,23 +93,18 @@ class Query extends \Expresser\Support\Query
     public function categories(array $ids, $operator = 'IN')
     {
         switch ($operator) {
-
-      case 'IN':
-
-        $this->category__in = $ids; break;
-
-      case 'NOT IN':
-
-        $this->category__not_in = $ids; break;
-
-      case 'AND':
-
-        $this->category__and = $ids; break;
-
-      default:
-
-        throw new InvalidArgumentException();
-    }
+            case 'IN':
+                $this->category__in = $ids;
+                break;
+            case 'NOT IN':
+                $this->category__not_in = $ids;
+                break;
+            case 'AND':
+                $this->category__and = $ids;
+                break;
+            default:
+                throw new InvalidArgumentException();
+        }
 
         return $this;
     }
@@ -134,31 +125,24 @@ class Query extends \Expresser\Support\Query
     public function tags(array $ids, $operator = 'IN')
     {
         switch ($operator) {
-
-      case 'IN':
-
-        $this->tag__in = $ids; break;
-
-      case 'NOT IN':
-
-        $this->tag__not_in = $ids; break;
-
-      case 'AND':
-
-        $this->tag__and = $ids; break;
-
-      case 'SLUG IN':
-
-        $this->tag_slug__in = $ids; break;
-
-      case 'SLUG AND':
-
-        $this->tag_slug__and = $ids; break;
-
-      default:
-
-        throw new InvalidArgumentException();
-    }
+            case 'IN':
+                $this->tag__in = $ids;
+                break;
+            case 'NOT IN':
+                $this->tag__not_in = $ids;
+                break;
+            case 'AND':
+                $this->tag__and = $ids;
+                break;
+            case 'SLUG IN':
+                $this->tag_slug__in = $ids;
+                break;
+            case 'SLUG AND':
+                $this->tag_slug__and = $ids;
+                break;
+            default:
+                throw new InvalidArgumentException();
+        }
 
         return $this;
     }
@@ -217,25 +201,18 @@ class Query extends \Expresser\Support\Query
     public function posts(array $ids, $operator = 'IN')
     {
         switch ($operator) {
-
-      case 'IN':
-
-        $ids = count($ids) > 0 ? $ids : [PHP_INT_MAX];
-
-        $this->post__in = $ids; break;
-
-      case 'NOT IN':
-
-        $this->post__not_in = $ids; break;
-
-      case 'NAME IN':
-
-        $this->post_name__in = $ids; break;
-
-      default:
-
-        throw new InvalidArgumentException();
-    }
+            case 'IN':
+                $this->post__in = count($ids) > 0 ? $ids : [PHP_INT_MAX];;
+                break;
+            case 'NOT IN':
+                $this->post__not_in = $ids;
+                break;
+            case 'NAME IN':
+                $this->post_name__in = $ids;
+                break;
+            default:
+                throw new InvalidArgumentException();
+        }
 
         return $this;
     }
@@ -263,19 +240,15 @@ class Query extends \Expresser\Support\Query
     public function parents(array $ids, $operator = 'IN')
     {
         switch ($operator) {
-
-      case 'IN':
-
-        $this->post_parent__in = $ids; break;
-
-      case 'NOT IN':
-
-        $this->post_parent__not_in = $ids; break;
-
-      default:
-
-        throw new InvalidArgumentException();
-    }
+            case 'IN':
+                $this->post_parent__in = $ids;
+                break;
+            case 'NOT IN':
+                $this->post_parent__not_in = $ids;
+                break;
+            default:
+                throw new InvalidArgumentException();
+        }
 
         return $this;
     }
@@ -353,20 +326,20 @@ class Query extends \Expresser\Support\Query
         return $this;
     }
 
-  // TODO: Multi-dimensional orderBy
-  public function orderBy($orderBy = 'date', $order = 'DESC')
-  {
-      $this->orderby = $orderBy;
-      $this->order = $order;
+    // TODO: Multi-dimensional orderBy
+    public function orderBy($orderBy = 'date', $order = 'DESC')
+    {
+        $this->orderby = $orderBy;
+        $this->order = $order;
 
-      return $this;
-  }
+        return $this;
+    }
 
-  // TODO: Date Query implementation
-  public function date()
-  {
-      return $this;
-  }
+    // TODO: Date Query implementation
+    public function date()
+    {
+        return $this;
+    }
 
     public function metaCompare($compare)
     {
