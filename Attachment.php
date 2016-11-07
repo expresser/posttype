@@ -20,6 +20,16 @@ class Attachment extends Native
         }
     }
 
+    public function filename()
+    {
+        return basename($this->filepath);
+    }
+
+    public function filepath()
+    {
+        return get_attached_file($this->ID);
+    }
+
     public function newQuery()
     {
         return parent::newQuery()->status($this->post_status);
