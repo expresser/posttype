@@ -3,10 +3,11 @@
 namespace Expresser\PostType;
 
 use Closure;
+use Expresser\Support\Query as BaseQuery;
 use InvalidArgumentException;
 use WP_Query;
 
-class Query extends \Expresser\Support\Query
+class Query extends BaseQuery
 {
     private $statuses = ['publish', 'pending', 'draft', 'auto-draft', 'future', 'private', 'inherit', 'trash'];
 
@@ -16,36 +17,6 @@ class Query extends \Expresser\Support\Query
         $this->tax_query = [];
 
         parent::__construct($query);
-    }
-
-    public function find($id)
-    {
-        return $this->post($id)->status($this->statuses)->first();
-    }
-
-    public function findAll(array $ids)
-    {
-        return $this->posts($ids)->status($this->statuses)->get();
-    }
-
-    public function findByName($name)
-    {
-        return $this->post($name)->status($this->statuses)->first();
-    }
-
-    public function findBySlug($name)
-    {
-        return $this->page($name)->status($this->statuses)->first();
-    }
-
-    public function first()
-    {
-        return $this->limit(1)->get()->first();
-    }
-
-    public function limit($limit)
-    {
-        return $this->paginate($limit);
     }
 
     public function author($id)
@@ -169,7 +140,7 @@ class Query extends \Expresser\Support\Query
 
     public function taxonomiesSub(Closure $callback, $relation = 'AND')
     {
-        $query = (new static(new WP_Query()))->setModel($this->model);
+        $query = (new static(new WP_Query));
 
         $query->taxonomies($callback, $relation);
 
@@ -395,7 +366,7 @@ class Query extends \Expresser\Support\Query
 
     public function metasSub(Closure $callback, $relation = 'AND')
     {
-        $query = (new static(new WP_Query()))->setModel($this->model);
+        $query = (new static(new WP_Query));
 
         $query->metas($callback, $relation);
 
@@ -444,5 +415,10 @@ class Query extends \Expresser\Support\Query
         $this->suppress_filters = true;
 
         return $this;
+    }
+
+    public function limit($limit)
+    {
+        return $this->paginate($limit);
     }
 }

@@ -2,11 +2,15 @@
 
 namespace Expresser\PostType;
 
+use Expresser\PostType\Traits\Content;
+use Expresser\PostType\Traits\Excerpt;
+use Expresser\PostType\Traits\Permalink;
+
 class Post extends Native
 {
-    use \Expresser\PostType\Traits\Content,
-      \Expresser\PostType\Traits\Excerpt,
-      \Expresser\PostType\Traits\Permalink;
+    use Content,
+        Excerpt,
+        Permalink;
 
     public function postType()
     {

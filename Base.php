@@ -3,19 +3,20 @@
 namespace Expresser\PostType;
 
 use Exception;
+use Expresser\Support\Model;
 use WP_Post;
 use WP_Query;
 
-abstract class Base extends \Expresser\Support\Model
+abstract class Base extends Model
 {
     protected $post;
 
     public function __construct(WP_Post $post = null)
     {
         $this->post = $post ?: new WP_Post((object) [
-      'post_status' => $this->post_status,
-      'post_type'   => $this->post_type,
-    ]);
+            'post_status' => $this->post_status,
+            'post_type'   => $this->post_type,
+        ]);
 
         parent::__construct($this->post->to_array());
     }
@@ -80,7 +81,7 @@ abstract class Base extends \Expresser\Support\Model
 
     public function newQuery()
     {
-        $query = (new Query(new WP_Query()))->setModel($this);
+        $query = (new Builder(new Query(new WP_Query)))->setModel($this);
 
         return $query->type($this->post_type)->paginate(false);
     }
@@ -108,9 +109,9 @@ abstract class Base extends \Expresser\Support\Model
     public function update()
     {
         wp_update_post(array_merge(
-      $this->getDirty(),
-      ['ID' => $this->ID]
-    ));
+            $this->getDirty(),
+            ['ID' => $this->ID]
+        ));
     }
 
     public function updateMeta($key, $value, $previousValue = '')

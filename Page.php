@@ -2,10 +2,13 @@
 
 namespace Expresser\PostType;
 
+use Expresser\PostType\Traits\Content;
+use Expresser\PostType\Traits\Permalink;
+
 class Page extends Native
 {
-    use \Expresser\PostType\Traits\Content,
-      \Expresser\PostType\Traits\Permalink;
+    use Content,
+        Permalink;
 
     public function postType()
     {
