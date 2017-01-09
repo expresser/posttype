@@ -6,12 +6,19 @@ use Expresser\Support\Filter;
 
 trait Archive
 {
+    public function getArchiveUrlAttribute()
+    {
+        $archiveUrl = get_post_type_archive_link($this->post_type);
+
+        if (Filter::isUrl($archiveUrl)) {
+            return $archiveUrl;
+        }
+    }
+
     public static function getArchiveUrl()
     {
-        $url = get_post_type_archive_link((new static())->post_type);
+        $instance = (new static);
 
-        if (Filter::isUrl($url)) {
-            return $url;
-        }
+        return $instance->archive_url;
     }
 }

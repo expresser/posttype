@@ -6,9 +6,9 @@ use Expresser\Taxonomy\Category;
 
 trait Categories
 {
-    public function categories()
+    public function getCategoriesAttribute()
     {
-        return $this->categories = Category::query()->post($this->ID)->get();
+        return Category::query()->post($this->ID)->get();
     }
 
     public function hasCategories(array $categories = [])

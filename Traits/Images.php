@@ -6,12 +6,7 @@ use Expresser\PostType\Image;
 
 trait Images
 {
-    public function hasImages()
-    {
-        return $this->images->count() > 0;
-    }
-
-    public function images()
+    public function getImagesAttribute()
     {
         $images = Image::query()->parent($this->ID)->get();
 
@@ -19,6 +14,11 @@ trait Images
             $images->push($this->featured_image);
         }
 
-        return $this->images = $images;
+        return $images;
+    }
+
+    public function hasImages()
+    {
+        return $this->images->count() > 0;
     }
 }

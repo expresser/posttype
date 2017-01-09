@@ -12,8 +12,12 @@ class Post extends Native
         Excerpt,
         Permalink;
 
-    public function postType()
+    public $post_type = 'post';
+
+    public function getCacheableAccessors()
     {
-        return 'post';
+        return array_merge(parent::getCacheableAccessors(), [
+            'permalink',
+        ]);
     }
 }

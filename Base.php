@@ -9,6 +9,10 @@ use WP_Query;
 
 abstract class Base extends Model
 {
+    public $post_type;
+
+    public $post_status;
+
     protected $post;
 
     public function __construct(WP_Post $post = null)
@@ -21,19 +25,19 @@ abstract class Base extends Model
         parent::__construct($this->post->to_array());
     }
 
-    public function addMeta($key, $value, $unique = false)
+    public function newQuery()
     {
-        return add_post_meta($this->ID, $key, $value, $unique);
+        $query = (new Builder(new Query(new WP_Query)))->setModel($this);
+
+        return $query->type($this->post_type)->paginate(false);
     }
 
-    public function delete()
+    public function getCacheableAccessors()
     {
-        wp_trash_post($this->ID);
-    }
-
-    public function deleteMeta($key, $value = '')
-    {
-        return delete_post_meta($this->ID, $key, $value);
+        return array_merge(parent::getCacheableAccessors(), [
+            'next_post',
+            'previous_post',
+        ]);
     }
 
     public function getPostAuthorAttribute($value)
@@ -54,9 +58,14 @@ abstract class Base extends Model
         return $value;
     }
 
-    public function getMeta($key, $single = false)
+    public function getNextPostAttribute()
     {
-        return get_post_meta($this->ID, $key, $single);
+        return $this->getNextPost();
+    }
+
+    public function getPreviousPostAttribute()
+    {
+        return $this->getPreviousPost();
     }
 
     public function hasNextPost()
@@ -69,31 +78,47 @@ abstract class Base extends Model
         return !is_null($this->previous_post);
     }
 
-    public function insert()
-    {
-        return wp_insert_post($this->getDirty());
-    }
-
     public function isPasswordRequired()
     {
         return post_password_required($this->ID);
     }
 
-    public function newQuery()
+    public function insert()
     {
-        $query = (new Builder(new Query(new WP_Query)))->setModel($this);
-
-        return $query->type($this->post_type)->paginate(false);
+        return wp_insert_post($this->getDirty());
     }
 
-    public function nextPost()
+    public function update()
     {
-        return $this->next_post = $this->getNextPost();
+        wp_update_post(array_merge(
+            $this->getDirty(),
+            ['ID' => $this->ID]
+        ));
     }
 
-    public function previousPost()
+    public function delete()
     {
-        return $this->previous_post = $this->getPreviousPost();
+        wp_trash_post($this->ID);
+    }
+
+    public function getMeta($key, $single = false)
+    {
+        return get_post_meta($this->ID, $key, $single);
+    }
+
+    public function addMeta($key, $value, $unique = false)
+    {
+        return add_post_meta($this->ID, $key, $value, $unique);
+    }
+
+    public function updateMeta($key, $value, $previousValue = '')
+    {
+        return update_post_meta($this->ID, $key, $value, $previousValue);
+    }
+
+    public function deleteMeta($key, $value = '')
+    {
+        return delete_post_meta($this->ID, $key, $value);
     }
 
     public function replaceTerms(array $terms, $taxonomy)
@@ -106,17 +131,14 @@ abstract class Base extends Model
         return wp_set_object_terms($this->ID, $terms, $taxonomy, $append);
     }
 
-    public function update()
+    protected function getNextPost($inSameTerm = false, array $excludedTerms = [], $taxonomy = 'category')
     {
-        wp_update_post(array_merge(
-            $this->getDirty(),
-            ['ID' => $this->ID]
-        ));
+        return $this->getAdjacentPost($inSameTerm, $excludedTerms, false, $taxonomy);
     }
 
-    public function updateMeta($key, $value, $previousValue = '')
+    protected function getPreviousPost($inSameTerm = false, array $excludedTerms = [], $taxonomy = 'category')
     {
-        return update_post_meta($this->ID, $key, $value, $previousValue);
+        return $this->getAdjacentPost($inSameTerm, $excludedTerms, true, $taxonomy);
     }
 
     protected function getAdjacentPost($inSameTerm = false, array $excludedTerms = [], $previous = true, $taxonomy = 'category')
@@ -134,16 +156,6 @@ abstract class Base extends Model
         if ($adjacentPost instanceof WP_Post) {
             return self::make($adjacentPost);
         }
-    }
-
-    protected function getNextPost($inSameTerm = false, array $excludedTerms = [], $taxonomy = 'category')
-    {
-        return $this->getAdjacentPost($inSameTerm, $excludedTerms, false, $taxonomy);
-    }
-
-    protected function getPreviousPost($inSameTerm = false, array $excludedTerms = [], $taxonomy = 'category')
-    {
-        return $this->getAdjacentPost($inSameTerm, $excludedTerms, true, $taxonomy);
     }
 
     public static function doDeletePost($id)
@@ -243,6 +255,4 @@ abstract class Base extends Model
     {
         return static::doFilter(implode('/', [$type, $filter]), $args);
     }
-
-    abstract public function postType();
 }

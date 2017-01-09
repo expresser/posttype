@@ -8,16 +8,16 @@ trait Permalink
 {
     use CachePermalink;
 
-    public function permalink()
+    public function getPermalinkAttribute()
     {
         $permalink = get_permalink($this->ID);
 
         if (Filter::isUrl($permalink)) {
-            return $this->permalink = $permalink;
+            return $permalink;
         }
     }
 
-    public function url()
+    public function getUrlAttribute()
     {
         return $this->permalink;
     }

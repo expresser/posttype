@@ -10,13 +10,66 @@ class Image extends Attachment implements Renderable
 
     protected $classNames;
 
-    public function alt()
+    public function newQuery()
+    {
+        return parent::newQuery()->mimeType($this->post_mime_type);
+    }
+
+    public function getCacheableAccessors()
+    {
+        return array_merge(parent::getCacheableAccessors(), [
+            'alt',
+            'meta',
+        ]);
+    }
+
+    public function getAltAttribute()
     {
         $alt = get_post_meta($this->ID, '_wp_attachment_image_alt', true);
 
         if (!empty($alt)) {
-            return $this->alt = $alt;
+            return $alt;
         }
+    }
+
+    public function getHeightAttribute()
+    {
+        return $this->meta['height'];
+    }
+
+    public function getSizesAttribute()
+    {
+        return $this->meta['sizes'];
+    }
+
+    public function getWidthAttribute()
+    {
+        return $this->meta['width'];
+    }
+
+    public function getMetaAttribute()
+    {
+        $meta = wp_get_attachment_metadata($this->ID, true);
+
+        if (is_array($meta)) {
+            if (!isset($meta['sizes'])) {
+                $meta['sizes'] = [];
+            }
+
+            foreach ($meta['sizes'] as $name => &$size) {
+                $size = array_merge($size, array_combine(
+                    ['url', 'width', 'height', 'resized'],
+                    wp_get_attachment_image_src($this->ID, $name)
+                ));
+            }
+
+            return $meta;
+        }
+    }
+
+    public function getThumbnailUrlAttribute()
+    {
+        return $this->getSizeUrl('thumbnail');
     }
 
     public function getClassNames($classNames)
@@ -44,11 +97,6 @@ class Image extends Attachment implements Renderable
         }
     }
 
-    public function height()
-    {
-        return $this->meta['height'];
-    }
-
     public function isDimension($width, $height)
     {
         return $this->width == $width && $this->height == $height;
@@ -64,31 +112,6 @@ class Image extends Attachment implements Renderable
         return $this->height > $this->width;
     }
 
-    public function meta()
-    {
-        $meta = wp_get_attachment_metadata($this->ID, true);
-
-        if (is_array($meta)) {
-            if (!isset($meta['sizes'])) {
-                $meta['sizes'] = [];
-            }
-
-            foreach ($meta['sizes'] as $name => &$size) {
-                $size = array_merge($size, array_combine(
-          ['url', 'width', 'height', 'resized'],
-          wp_get_attachment_image_src($this->ID, $name)
-        ));
-            }
-
-            return $this->meta = $meta;
-        }
-    }
-
-    public function newQuery()
-    {
-        return parent::newQuery()->mimeType($this->post_mime_type);
-    }
-
     public function render($classNames = null, $alt = null, $title = null)
     {
         $this->classNames = $classNames;
@@ -100,21 +123,6 @@ class Image extends Attachment implements Renderable
         remove_filter('get_image_tag_class', [$this, 'getClassNames'], 10);
 
         return $img;
-    }
-
-    public function sizes()
-    {
-        return $this->meta['sizes'];
-    }
-
-    public function thumbnailUrl()
-    {
-        return $this->getSizeUrl('thumbnail');
-    }
-
-    public function width()
-    {
-        return $this->meta['width'];
     }
 
     public static function renderImageOrDefault(Renderable $image = null, $defaultSrc, $classNames = null)

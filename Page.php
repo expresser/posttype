@@ -10,8 +10,12 @@ class Page extends Native
     use Content,
         Permalink;
 
-    public function postType()
+    public $post_type = 'page';
+
+    public function getCacheableAccessors()
     {
-        return 'page';
+        return array_merge(parent::getCacheableAccessors(), [
+            'permalink',
+        ]);
     }
 }
