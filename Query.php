@@ -13,18 +13,22 @@ class Query extends BaseQuery
 
     public function __construct(WP_Query $query)
     {
-        $this->meta_query = [];
-        $this->tax_query = [];
-
         parent::__construct($query);
+    }
+
+    public function execute()
+    {
+        $posts = $this->query->get_posts();
+
+        return $posts;
     }
 
     public function author($id)
     {
         if (is_int($id)) {
-            $this->author = $id;
+            $this->setQueryVar('author', $id);
         } elseif (is_string($id)) {
-            $this->author_name = $id;
+            $this->setQueryVar('author_name', $id);
         } else {
             throw new InvalidArgumentException();
         }
@@ -36,10 +40,10 @@ class Query extends BaseQuery
     {
         switch ($operator) {
             case 'IN':
-                $this->author__in = $ids;
+                $this->setQueryVar('author__in', $ids);
                 break;
             case 'NOT IN':
-                $this->author__not_in = $ids;
+                $this->setQueryVar('author__not_in', $ids);
                 break;
             default:
                 throw new InvalidArgumentException();
@@ -51,9 +55,9 @@ class Query extends BaseQuery
     public function category($id)
     {
         if (is_int($id)) {
-            $this->cat = $id;
+            $this->setQueryVar('cat', $id);
         } elseif (is_string($id)) {
-            $this->category_name = $id;
+            $this->setQueryVar('category_name', $id);
         } else {
             throw new InvalidArgumentException();
         }
@@ -65,13 +69,13 @@ class Query extends BaseQuery
     {
         switch ($operator) {
             case 'IN':
-                $this->category__in = $ids;
+                $this->setQueryVar('category__in', $ids);
                 break;
             case 'NOT IN':
-                $this->category__not_in = $ids;
+                $this->setQueryVar('category__not_in', $ids);
                 break;
             case 'AND':
-                $this->category__and = $ids;
+                $this->setQueryVar('category__and', $ids);
                 break;
             default:
                 throw new InvalidArgumentException();
@@ -83,9 +87,9 @@ class Query extends BaseQuery
     public function tag($id)
     {
         if (is_int($id)) {
-            $this->tag_id = $id;
+            $this->setQueryVar('tag_id', $id);
         } elseif (is_string($id)) {
-            $this->tag = $id;
+            $this->setQueryVar('tag', $id);
         } else {
             throw new InvalidArgumentException();
         }
@@ -97,19 +101,19 @@ class Query extends BaseQuery
     {
         switch ($operator) {
             case 'IN':
-                $this->tag__in = $ids;
+                $this->setQueryVar('tag__in', $ids);
                 break;
             case 'NOT IN':
-                $this->tag__not_in = $ids;
+                $this->setQueryVar('tag__not_in', $ids);
                 break;
             case 'AND':
-                $this->tag__and = $ids;
+                $this->setQueryVar('tag__and', $ids);
                 break;
             case 'SLUG IN':
-                $this->tag_slug__in = $ids;
+                $this->setQueryVar('tag_slug__in', $ids);
                 break;
             case 'SLUG AND':
-                $this->tag_slug__and = $ids;
+                $this->setQueryVar('tag_slug__and', $ids);
                 break;
             default:
                 throw new InvalidArgumentException();
@@ -122,7 +126,9 @@ class Query extends BaseQuery
     {
         $tax_query = compact('taxonomy', 'field', 'terms', 'include_children', 'operator');
 
-        $this->tax_query = array_merge($this->tax_query, [$tax_query]);
+        $tax_query = array_merge($this->getQueryVar('tax_query'), [$tax_query]);
+
+        $this->setQueryVar('tax_query', $tax_query);
 
         return $this;
     }
@@ -131,8 +137,13 @@ class Query extends BaseQuery
     {
         call_user_func($callback, $this);
 
-        if (count($this->tax_query) > 1) {
-            $this->tax_query = array_merge(['relation' => $relation], $this->tax_query);
+        $tax_query = $this->getQueryVar('tax_query');
+
+        if (count($tax_query) > 1) {
+
+            $tax_query = array_merge(['relation' => $relation], $tax_query);
+
+            $this->setQueryVar('tax_query', $tax_query);
         }
 
         return $this;
@@ -144,14 +155,18 @@ class Query extends BaseQuery
 
         $query->taxonomies($callback, $relation);
 
-        $this->tax_query = array_merge($this->tax_query, [$query->tax_query]);
+        $tax_query = $this->getQueryVar('tax_query');
+
+        $tax_query = array_merge($tax_query, [$query->getQueryVar('tax_query')]);
+
+        $this->setQueryVar('tax_query', $tax_query);
 
         return $this;
     }
 
     public function search($keyword)
     {
-        $this->s = $keyword;
+        $this->setQueryVar('s', $keyword);
 
         return $this;
     }
@@ -159,9 +174,9 @@ class Query extends BaseQuery
     public function post($id)
     {
         if (is_int($id)) {
-            $this->p = $id;
+            $this->setQueryVar('p', $id);
         } elseif (is_string($id)) {
-            $this->name = $id;
+            $this->setQueryVar('name', $id);
         } else {
             throw new InvalidArgumentException();
         }
@@ -173,13 +188,15 @@ class Query extends BaseQuery
     {
         switch ($operator) {
             case 'IN':
-                $this->post__in = count($ids) > 0 ? $ids : [PHP_INT_MAX];;
+                $ids = (count($ids) > 0 ? $ids : [PHP_INT_MAX]);
+
+                $this->setQueryVar('post__in', $ids);
                 break;
             case 'NOT IN':
-                $this->post__not_in = $ids;
+                $this->setQueryVar('post__not_in', $ids);
                 break;
             case 'NAME IN':
-                $this->post_name__in = $ids;
+                $this->setQueryVar('post_name__in', $ids);
                 break;
             default:
                 throw new InvalidArgumentException();
@@ -191,9 +208,9 @@ class Query extends BaseQuery
     public function page($id)
     {
         if (is_int($id)) {
-            $this->page_id = $id;
+            $this->setQueryVar('page_id', $id);
         } elseif (is_string($id)) {
-            $this->pagename = $id;
+            $this->setQueryVar('pagename', $id);
         } else {
             throw new InvalidArgumentException();
         }
@@ -203,7 +220,7 @@ class Query extends BaseQuery
 
     public function parent($id)
     {
-        $this->post_parent = $id;
+        $this->setQueryVar('post_parent', $id);
 
         return $this;
     }
@@ -212,10 +229,10 @@ class Query extends BaseQuery
     {
         switch ($operator) {
             case 'IN':
-                $this->post_parent__in = $ids;
+                $this->setQueryVar('post_parent__in', $ids);
                 break;
             case 'NOT IN':
-                $this->post_parent__not_in = $ids;
+                $this->setQueryVar('post_parent__not_in', $ids);
                 break;
             default:
                 throw new InvalidArgumentException();
@@ -226,28 +243,28 @@ class Query extends BaseQuery
 
     public function hasPassword($hasPassword = null)
     {
-        $this->has_password = $hasPassword;
+        $this->setQueryVar('has_password', $hasPassword);
 
         return $this;
     }
 
     public function password($password)
     {
-        $this->post_password = $password;
+        $this->setQueryVar('post_password', $password);
 
         return $this;
     }
 
     public function type($type)
     {
-        $this->post_type = $type;
+        $this->setQueryVar('post_type', $type);
 
         return $this;
     }
 
     public function status($status)
     {
-        $this->post_status = $status;
+        $this->setQueryVar('post_status', $status);
 
         return $this;
     }
@@ -255,27 +272,29 @@ class Query extends BaseQuery
     public function paginate($count, $page = 1, $offset = 0, $type = null)
     {
         if (is_int($count) && $count >= 0) {
-            $this->nopaging = false;
+            $this->setQueryVar('nopaging', false);
 
             if (str_is($type, 'ARCHIVE')) {
-                $this->posts_per_archive_page = $count;
+                $this->setQueryVar('posts_per_archive_page', $count);
             } else {
-                $this->posts_per_page = $count;
+                $this->setQueryVar('posts_per_page', $count);
             }
 
             if ($offset > 0) {
-                $this->offset = ($offset + ($page - 1) * $count);
+                $offset = ($offset + ($page - 1) * $count);
+
+                $this->setQueryVar('offset', $offset);
             } else {
-                $this->offset = $offset;
+                $this->setQueryVar('offset', $offset);
 
                 if (str_is($type, 'STATIC FRONT PAGE')) {
-                    $this->page = $page;
+                    $this->setQueryVar('page', $page);
                 } else {
-                    $this->paged = $page;
+                    $this->setQueryVar('paged', $page);
                 }
             }
         } elseif ($count === -1 || $count === false) {
-            $this->nopaging = true;
+            $this->setQueryVar('nopaging', true);
         } else {
             throw new InvalidArgumentException();
         }
@@ -283,16 +302,21 @@ class Query extends BaseQuery
         return $this;
     }
 
+    public function limit($limit)
+    {
+        return $this->paginate($limit);
+    }
+
     public function ignoreStickyPosts()
     {
-        $this->ignore_sticky_posts = true;
+        $this->setQueryVar('ignore_sticky_posts', true);
 
         return $this;
     }
 
     public function order($order = 'DESC')
     {
-        $this->order = $order;
+        $this->setQueryVar('order', $order);
 
         return $this;
     }
@@ -300,8 +324,8 @@ class Query extends BaseQuery
     // TODO: Multi-dimensional orderBy
     public function orderBy($orderBy = 'date', $order = 'DESC')
     {
-        $this->orderby = $orderBy;
-        $this->order = $order;
+        $this->setQueryVar('orderby', $orderBy);
+        $this->setQueryVar('order', $order);
 
         return $this;
     }
@@ -314,28 +338,28 @@ class Query extends BaseQuery
 
     public function metaCompare($compare)
     {
-        $this->meta_compare = $compare;
+        $this->setQueryVar('meta_compare', $compare);
 
         return $this;
     }
 
     public function metaKey($key)
     {
-        $this->meta_key = $key;
+        $this->setQueryVar('meta_key', $key);
 
         return $this;
     }
 
     public function metaType($type)
     {
-        $this->meta_type = $type;
+        $this->setQueryVar('meta_type', $type);
 
         return $this;
     }
 
     public function metaValue($value)
     {
-        $this->meta_value = $value;
+        $this->setQueryVar('meta_value', $value);
 
         return $this;
     }
@@ -348,7 +372,9 @@ class Query extends BaseQuery
             unset($meta_query['value']);
         }
 
-        $this->meta_query = array_merge($this->meta_query, [$meta_query]);
+        $meta_query = array_merge($this->getQueryVar('meta_query'), [$meta_query]);
+
+        $this->setQueryVar('meta_query', $meta_query);
 
         return $this;
     }
@@ -357,8 +383,13 @@ class Query extends BaseQuery
     {
         call_user_func($callback, $this);
 
-        if (count($this->meta_query) > 1) {
-            $this->meta_query = array_merge(['relation' => $relation], $this->meta_query);
+        $meta_query = $this->getQueryVar('meta_query');
+
+        if (count($meta_query) > 1) {
+
+            $meta_query = array_merge(['relation' => $relation], $meta_query);
+
+            $this->setQueryVar('meta_query', $meta_query);
         }
 
         return $this;
@@ -370,55 +401,60 @@ class Query extends BaseQuery
 
         $query->metas($callback, $relation);
 
-        $this->meta_query = array_merge($this->meta_query, [$query->meta_query]);
+        $meta_query = $this->getQueryVar('meta_query');
+
+        $meta_query = array_merge($meta_query, [$query->getQueryVar('meta_query')]);
+
+        $this->setQueryVar('meta_query', $meta_query);
 
         return $this;
     }
 
     public function permission($perm)
     {
-        $this->perm = $perm;
+        $this->setQueryVar('perm', $perm);
 
         return $this;
     }
 
     public function mimeType($mimeType)
     {
-        $this->post_mime_type = $mimeType;
+        $this->setQueryVar('post_mime_type', $mimeType);
 
         return $this;
     }
 
     public function cacheResults($enable = true)
     {
-        $this->cache_results = $enable;
+        $this->setQueryVar('cache_results', $enable);
 
         return $this;
     }
 
     public function updatePostMetaCache($enable = true)
     {
-        $this->update_post_meta_cache = $enable;
+        $this->setQueryVar('update_post_meta_cache', $enable);
 
         return $this;
     }
 
     public function updatePostTermCache($enable = true)
     {
-        $this->update_post_term_cache = $enable;
+        $this->setQueryVar('update_post_term_cache', $enable);
 
         return $this;
     }
 
-    public function suppressFilters()
+    public function suppressFilters($suppress = true)
     {
-        $this->suppress_filters = true;
+        $this->setQueryVar('suppress_filters', $suppress);
 
         return $this;
     }
 
-    public function limit($limit)
+    protected function initQueryVars()
     {
-        return $this->paginate($limit);
+        $this->setQueryVar('meta_query', []);
+        $this->setQueryVar('tax_query', []);
     }
 }

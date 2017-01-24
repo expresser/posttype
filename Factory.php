@@ -11,17 +11,21 @@ class Factory
 
     public static function resolve(WP_Post $post)
     {
-        $class = static::normalizeClassName($post->post_type);
+        $postType = $post->post_type;
 
-        return new $class($post);
+        $classname = isset(static::$classCache[$postType]) ? static::$classCache[$postType] : null;
+
+        if (is_null($classname)) {
+            $classname = static::normalizeClassName($postType);
+
+            static::$classCache[$postType] = $classname;
+        }
+
+        return new $classname($post);
     }
 
     protected static function normalizeClassName($key)
     {
-        if (isset(static::$classCache[$key])) {
-            return static::$classCache[$key];
-        }
-
         $classname = static::convertToNamespace($key);
 
         if (!class_exists($classname)) {
@@ -36,7 +40,7 @@ class Factory
             }
         }
 
-        return static::$classCache[$key] = $classname;
+        return $classname;
     }
 
     protected static function convertToWords($value)
