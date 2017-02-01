@@ -155,9 +155,9 @@ class Query extends BaseQuery
 
         $query->taxonomies($callback, $relation);
 
-        $tax_query = $this->getQueryVar('tax_query');
+        $tax_query = $query->getQueryVar('tax_query');
 
-        $tax_query = array_merge($tax_query, [$query->getQueryVar('tax_query')]);
+        $tax_query = array_merge($this->getQueryVar('tax_query'), [$tax_query]);
 
         $this->setQueryVar('tax_query', $tax_query);
 
@@ -401,9 +401,9 @@ class Query extends BaseQuery
 
         $query->metas($callback, $relation);
 
-        $meta_query = $this->getQueryVar('meta_query');
+        $meta_query = $query->getQueryVar('meta_query');
 
-        $meta_query = array_merge($meta_query, [$query->getQueryVar('meta_query')]);
+        $meta_query = array_merge($this->getQueryVar('meta_query'), [$meta_query]);
 
         $this->setQueryVar('meta_query', $meta_query);
 
