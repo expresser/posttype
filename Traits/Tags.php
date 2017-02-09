@@ -11,9 +11,14 @@ trait Tags
         return Tag::query()->post($this->ID)->get();
     }
 
-    public function hasTags()
+    public function hasTags(array $tags = [])
     {
-        return $this->tags->count() > 0;
+        return $this->hasTag($tags);
+    }
+
+    public function hasTag($tag)
+    {
+        return has_tag($tag, $this->ID);
     }
 
     public function replaceTags(array $tags)
