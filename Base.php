@@ -36,6 +36,7 @@ abstract class Base extends Model
     {
         return array_merge(parent::getCacheableAccessors(), [
             'next_post',
+            'password_form',
             'previous_post',
         ]);
     }
@@ -43,7 +44,7 @@ abstract class Base extends Model
     public function getPostAuthorAttribute($value)
     {
         if (is_numeric($value)) {
-            $value = (int) $value;
+            $value = (int)$value;
         }
 
         return $value;
@@ -52,7 +53,7 @@ abstract class Base extends Model
     public function getCommentCountAttribute($value)
     {
         if (is_numeric($value)) {
-            $value = (int) $value;
+            $value = (int)$value;
         }
 
         return $value;
@@ -63,14 +64,14 @@ abstract class Base extends Model
         return $this->getNextPost();
     }
 
-    public function getPreviousPostAttribute()
-    {
-        return $this->getPreviousPost();
-    }
-
     public function hasNextPost()
     {
         return !is_null($this->next_post);
+    }
+
+    public function getPreviousPostAttribute()
+    {
+        return $this->getPreviousPost();
     }
 
     public function hasPreviousPost()
@@ -78,9 +79,16 @@ abstract class Base extends Model
         return !is_null($this->previous_post);
     }
 
+    public function getPasswordFormAttribute()
+    {
+        if ($this->isPasswordRequired()) {
+            return get_the_password_form($this->post);
+        }
+    }
+
     public function isPasswordRequired()
     {
-        return post_password_required($this->ID);
+        return post_password_required($this->post);
     }
 
     public function insert()
@@ -147,11 +155,11 @@ abstract class Base extends Model
 
         $globalPost = $post;
 
-        $post = get_post($this->ID);
+        $post = get_post($this->post);
 
         $adjacentPost = get_adjacent_post($inSameTerm, $excludedTerms, $previous, $taxonomy);
 
-        $post = $globalPost;
+        $post = get_post($globalPost);
 
         if ($adjacentPost instanceof WP_Post) {
             return self::make($adjacentPost);
@@ -200,7 +208,7 @@ abstract class Base extends Model
                 $value = static::doPostTypeFilter('get_post_thumbnail_id', get_post_type($id), compact('value', 'id'));
             }
 
-            $value = is_numeric($value) ? (int) $value : null;
+            $value = is_numeric($value) ? (int)$value : null;
         }
 
         return $value;

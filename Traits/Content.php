@@ -4,23 +4,20 @@ namespace Expresser\PostType\Traits;
 
 trait Content
 {
-    protected $suppressPostContentFilters = false;
+    private $enablePostContentFilters = true;
 
     public function getPostContentAttribute($value)
     {
-        if (post_password_required($this->ID)) {
-            $value = get_the_password_form($this->ID);
+        if ($this->isPasswordRequired()) {
+            $value = $this->password_form;
+        } else {
+            if ($this->enabledPostContentFilters()) {
+                $value = apply_filters('the_content', $value);
+                $value = str_replace(']]>', ']]&gt;', $value);
+            }
         }
 
-        if (!$this->suppressPostContentFilters) {
-            $value = apply_filters('the_content', $value);
-        }
-
-        $this->suppressPostContentFilters = false;
-
-        if (!empty($value)) {
-            return $value;
-        }
+        return $value;
     }
 
     public function hasPostContent()
@@ -28,10 +25,25 @@ trait Content
         return !empty($this->post_content);
     }
 
-    public function suppressPostContentFilters($suppressPostContentFilters)
+    public function enablePostContentFilters($enablePostContentFilters = true)
     {
-        $this->suppressPostContentFilters = $suppressPostContentFilters;
+        $this->enablePostContentFilters = $enablePostContentFilters;
 
         return $this;
+    }
+
+    public function enabledPostContentFilters()
+    {
+        return $this->enablePostContentFilters;
+    }
+
+    public function suppressPostContentFilters($suppressPostContentFilters = true)
+    {
+        return $this->enablePostContentFilters(!$suppressPostContentFilters);
+    }
+
+    public function suppressedPostContentFilters()
+    {
+        return !$this->enabledPostContentFilters();
     }
 }
