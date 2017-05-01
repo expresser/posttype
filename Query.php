@@ -16,6 +16,24 @@ class Query extends BaseQuery
         parent::__construct($query);
     }
 
+    public function getMetaQueryQueryVar($value)
+    {
+        if (is_null($value)) {
+            $value = [];
+        }
+
+        return $value;
+    }
+
+    public function getTaxQueryQueryVar($value)
+    {
+        if (is_null($value)) {
+            $value = [];
+        }
+
+        return $value;
+    }
+
     public function execute()
     {
         $posts = $this->query->get_posts();
@@ -450,11 +468,5 @@ class Query extends BaseQuery
         $this->setQueryVar('suppress_filters', $suppress);
 
         return $this;
-    }
-
-    protected function initQueryVars()
-    {
-        $this->setQueryVar('meta_query', []);
-        $this->setQueryVar('tax_query', []);
     }
 }
