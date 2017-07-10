@@ -166,6 +166,19 @@ abstract class Base extends Model
         }
     }
 
+    public static function getPostType()
+    {
+        static $postType;
+
+        if (is_null($postType)) {
+            $post = new static;
+
+            $postType = $post->post_type;
+        }
+
+        return $postType;
+    }
+
     public static function doDeletePost($id)
     {
         static::doPostTypeAction('delete_post', get_post_type($id), compact('id'));
