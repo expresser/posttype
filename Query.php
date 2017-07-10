@@ -34,6 +34,25 @@ class Query extends BaseQuery
         return $value;
     }
 
+    public function getPostCount()
+    {
+        return $this->query->post_count;
+    }
+
+    public function getPostTotal()
+    {
+        return $this->query->found_posts;
+    }
+
+    public function getPageTotal()
+    {
+        if ($this->getPostCount() > 0) {
+            return ceil($this->getPostTotal() / $this->getPostCount());
+        }
+
+        return 0;
+    }
+
     public function execute()
     {
         $posts = $this->query->get_posts();
