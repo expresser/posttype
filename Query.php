@@ -41,13 +41,13 @@ class Query extends BaseQuery
 
     public function getPostTotal()
     {
-        return $this->query->found_posts;
+        return (int)$this->query->found_posts;
     }
 
     public function getPageTotal()
     {
         if ($this->getPostCount() > 0) {
-            return ceil($this->getPostTotal() / $this->getPostCount());
+            return (int)$this->query->max_num_pages;
         }
 
         return 0;
@@ -322,8 +322,6 @@ class Query extends BaseQuery
 
                 $this->setQueryVar('offset', $offset);
             } else {
-                $this->setQueryVar('offset', $offset);
-
                 if (str_is($type, 'STATIC FRONT PAGE')) {
                     $this->setQueryVar('page', $page);
                 } else {
